@@ -1,0 +1,82 @@
+# Setup — run Flybrain on another machine
+
+Stage 1: a kinematic car steered by a rate-model neural network built from the
+**MaleCNS v1.0** connectome (CC-BY 4.0). This guide gets a fresh machine from
+`git clone` to a running neural episode.
+
+## 1. Python + deps
+
+Python 3.12–3.14. Create a venv and install:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Installs `numpy`, `scipy`, `pyarrow`. `pygame` (viewer, Phase 5) is commented
+out — uncomment only when building `viewer.py`.
+
+## 2. Verify the code slice (no data needed)
+
+```bash
+python3 -m unittest test_stage1 -q     # 16 tests, must be OK
+python3 simulation.py --benchmark      # physics-only loop timing
+```
+
+These run without any download — they cover the arena, kinematics, rate
+dynamics on a synthetic graph, scenario generation, and the transmitter-sign
+policy.
+
+## 3. Download the connectome (~1.1 GB, NOT in git)
+
+`data/` is gitignored — the raw Feather tables and the generated matrices are
+too big to version and are reproducible from the URLs below. Download the three
+source tables into `data/malecns-v1.0/`:
+
+```bash
+mkdir -p data/malecns-v1.0
+BASE=https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome
+cd data/malecns-v1.0
+curl -O $BASE/body-annotations-male-cns-v1.0-minconf-0.5.feather      # ~14 MB
+curl -O $BASE/body-neurotransmitters-male-cns-v1.0.feather            # ~41 MB
+curl -O $BASE/connectome-weights-male-cns-v1.0-minconf-0.5.feather    # ~1002 MB
+cd ../..
+```
+
+Release string: `male-cns:v1.0`. License: CC-BY 4.0.
+
+## 4. Build the prepared graph
+
+```bash
+python3 prepare_connectome.py --data data/malecns-v1.0
+```
+
+Reads the three Feather tables, writes `counts.npz`, `weights_signed.npz`,
+`ids.npy`, `manifest.json`. Expected output (recorded in the current
+`manifest.json`):
+
+- neurons retained: **191,148** (superclass not starting `vnc`)
+- edges: **22,267,078** (32.8% of total synaptic weight; the rest lands on
+  unannotated segments and is dropped — see `anatomical_weight_kept_fraction`)
+- transmitter sign: pos 84,459 / neg 41,109 / zero 65,580
+- interface: heading EPG n=46, goal FC2 n=92, PFL3 left/right 12/12
+
+## 5. Run a neural episode
+
+```bash
+python3 -c "
+import simulation as sim, brain as br, evaluate as ev
+b = br.Brain.load('data/malecns-v1.0')
+ctrl = br.NeuralController(b, br.Adapter(gain=1.0, bias=0.0))
+sc = ev.generate_scenarios(1, seed=0)[0]
+r = sim.run_episode(sc, ctrl, record=True)
+print(r.outcome, round(r.elapsed_time,2), 's')
+"
+```
+
+**Performance note:** the neural step is memory-bandwidth bound on the 22M-edge
+matvec — roughly **14.6 ms/step, ~0.68× realtime** on the dev machine. A full
+calibration grid (8 gains × 3 biases × 32 scenarios ≈ 768 episodes) is ~9 h at
+this speed. This is a known wall, documented in HANDOFF.md; do not shrink the
+graph to hit a time budget without a recorded decision (plan constraint).

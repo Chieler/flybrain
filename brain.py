@@ -16,8 +16,10 @@ grounded interface mapping is BLOCKED pending the dataset and mapping evidence
 
 from __future__ import annotations
 
+import json
 import math
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import scipy.sparse as sp
@@ -57,6 +59,30 @@ class Brain:
         self.output_map = output_map
         self.params = params or RateParams()
         self.activity = np.zeros(self.n, dtype=np.float32)
+
+    @classmethod
+    def load(cls, data_dir: str, params: RateParams | None = None) -> "Brain":
+        """Load a prepared connectome + interface map from prepare_connectome.py.
+
+        The output map (PFL3 L/R) is complete. The heading/goal input map is only
+        populated when the manifest carries preferred angles; until then those
+        roles are empty and cue encoding for them is a no-op (spontaneous /
+        stimulated recurrent dynamics still run — no fabricated angles).
+        """
+        data = Path(data_dir)
+        W = sp.load_npz(data / "weights_signed.npz")
+        manifest = json.loads((data / "manifest.json").read_text())
+        im = manifest["interface_map"]
+        input_map: dict = {}
+        for role, key in (("heading", "heading_input"), ("goal", "goal_input")):
+            entry = im.get(key, {})
+            angles = entry.get("preferred_angles")
+            if angles is not None:
+                input_map[role] = (np.array(entry["indices"]),
+                                   np.array(angles, dtype=np.float32))
+        output_map = {"left": np.array(im["left_output"]["indices"]),
+                      "right": np.array(im["right_output"]["indices"])}
+        return cls(W, input_map, output_map, params)
 
     def reset(self) -> None:
         self.activity = np.zeros(self.n, dtype=np.float32)
