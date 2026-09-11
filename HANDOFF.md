@@ -59,6 +59,16 @@ These come from the plan. Violating them invalidates the result.
 - Phase 1: connectome downloaded, converted, validated; anatomy-based preferred
   angles derived and documented.
 - Phase 2: arena + neural runtime; real-graph dynamics stable and bounded.
+- Phase 3: left/right symmetry, monotonicity, and the adapter geometry-shortcut
+  guard are checked in `test_stage1.py` (`TestNeuralSteering`). Full rotational
+  invariance is NOT expected — the compass tuning is absolute, not relative.
+- Phase 4 harness **code-complete** in `evaluate.py`, unit-tested on synthetic
+  graphs (`TestControls`): `calibrate_adapter` (declared grid, tie-break lower
+  |bias| then smaller gain), controls (`zero`/`random`), interventions
+  (`cue_withheld`, `pathway_silenced`), `shuffle_connectivity` (per-source
+  identity/sign/weight-multiset preserved), checkpoint I/O, and
+  `run_controls`. Running against the real graph is blocked only on `data/` +
+  a calibration checkpoint (see below).
 - Phase 3 (partial): steering signal verified **directionally correct** —
   `(left − right)` is monotonic and sign-correct in goal bearing:
 
@@ -83,13 +93,17 @@ These come from the plan. Violating them invalidates the result.
 
 ## Remaining work
 
-- **Phase 3 finish:** rotation-consistency check, confirm adapter has no
-  geometry shortcut, run calibration grid, freeze params, produce untrained vs.
-  calibrated trajectories.
+- **Phase 3 finish (run-only):** calibration grid running in cloud →
+  `checkpoint.json` (`{gain, bias, params, data_dir}`, written by
+  `evaluate.py --calibrate`). Then produce untrained vs. calibrated example
+  trajectories. Symmetry / geometry-shortcut checks: **done** (above).
 - **Phase 2 leftovers:** 10 ms vs 5 ms neural timestep comparison; formal 60 s
   benchmark with graph counts + memory.
-- **Phase 4:** held-out eval (100 scenarios) + controls — zero/random steering,
-  cue-withheld, pathway-silenced, shuffled-connectivity (3 seeds).
+- **Phase 4 (run-only):** once the checkpoint lands, run
+  `evaluate.py --controls --data <dir> --checkpoint checkpoint.json
+  --scenarios heldout.json`. Harness (neural + baseline + zero/random +
+  cue-withheld + pathway-silenced + shuffled×3-recalibrated) is written and
+  unit-tested; only execution against the real graph remains.
 - **Phase 5:** `viewer.py` (pygame; add + pin the dep when building it).
 
 ## Git
