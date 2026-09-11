@@ -131,5 +131,96 @@ class TestBrain(unittest.TestCase):
         self.assertLess(a(0.2, 0.8), 0.0)
 
 
+def _angle_tuned_brain():
+    """Synthetic 2-neuron brain, no recurrence: goal cue drives left/right pops.
+
+    Neuron 0 (left output) prefers +pi/2, neuron 1 (right output) prefers -pi/2,
+    so a goal to the left excites left>right and steering goes positive.
+    """
+    W = sp.csr_array(np.zeros((2, 2), dtype=np.float32))
+    input_map = {"goal": (np.array([0, 1]),
+                          np.array([math.pi / 2, -math.pi / 2], dtype=np.float32))}
+    output_map = {"left": np.array([0]), "right": np.array([1])}
+    return br.Brain(W, input_map, output_map, br.RateParams())
+
+
+def _settle(controller, heading, goal_bearing, steps=60):
+    obs = sim.NeuralObservation(heading=heading, goal_bearing=goal_bearing)
+    s = 0.0
+    for _ in range(steps):
+        s = controller(obs)
+    return s
+
+
+class TestNeuralSteering(unittest.TestCase):
+    """Phase 3: cue->brain->steering coupling checks (synthetic graph)."""
+
+    def test_left_right_symmetry(self):
+        b = _angle_tuned_brain()
+        ctrl = br.NeuralController(b, br.Adapter(gain=4.0, bias=0.0))
+        b.reset(); left = _settle(ctrl, 0.0, +0.8)
+        b.reset(); right = _settle(ctrl, 0.0, -0.8)
+        self.assertGreater(left, 0.0)               # goal left -> steer left
+        self.assertAlmostEqual(left, -right, places=5)  # mirror bearing -> mirror steer
+
+    def test_monotonic_in_bearing(self):
+        b = _angle_tuned_brain()
+        ctrl = br.NeuralController(b, br.Adapter(gain=0.5, bias=0.0))  # keep off the clip
+        b.reset(); near = _settle(ctrl, 0.0, 0.2)
+        b.reset(); far = _settle(ctrl, 0.0, 0.8)
+        b.reset(); zero = _settle(ctrl, 0.0, 0.0)
+        self.assertAlmostEqual(zero, 0.0, places=5)
+        self.assertLess(near, far)
+
+    def test_adapter_has_no_geometry_shortcut(self):
+        # With outputs held fixed, steering must be invariant to any geometry:
+        # the only channel from the world to the adapter is the two pooled rates.
+        b = _angle_tuned_brain()
+        ctrl = br.NeuralController(b, br.Adapter(gain=4.0, bias=0.0))
+        b.outputs = lambda: (0.7, 0.2)  # freeze the only legal channel
+        steers = {_settle(ctrl, h, g)
+                  for h in (-2.0, 0.0, 2.0) for g in (-2.0, 0.0, 1.0, 3.0)}
+        self.assertEqual(len(steers), 1)  # geometry changed, steering did not
+
+
+class TestControls(unittest.TestCase):
+    def test_shuffle_preserves_source_stats(self):
+        W = sp.csr_array(np.array([[0, -2, 0, 3],
+                                   [1, 0, 0, 0],
+                                   [0, 4, 0, -5],
+                                   [0, 0, 6, 0]], dtype=np.float32))
+        C0 = sp.csc_array(W)
+        C1 = sp.csc_array(ev.shuffle_connectivity(W, seed=7))
+        self.assertEqual(C1.shape, C0.shape)
+        for c in range(W.shape[1]):  # per source: same out-degree + weight multiset
+            d0 = sorted(C0.data[C0.indptr[c]:C0.indptr[c + 1]])
+            d1 = sorted(C1.data[C1.indptr[c]:C1.indptr[c + 1]])
+            self.assertEqual(d0, d1)
+
+    def test_cue_withheld_kills_steering(self):
+        b = _angle_tuned_brain()
+        full = br.NeuralController(b, br.Adapter(gain=4.0, bias=0.0))
+        b.reset(); driven = _settle(full, 0.0, 0.8)
+        ctrl, reset = ev.cue_withheld_controller(b, br.Adapter(gain=4.0, bias=0.0))
+        reset(); withheld = _settle(ctrl, 0.0, 0.8)
+        self.assertGreater(driven, 0.0)
+        self.assertAlmostEqual(withheld, 0.0, places=5)
+
+    def test_pathway_silenced_collapses_to_bias(self):
+        b = _angle_tuned_brain()
+        ctrl, reset = ev.pathway_silenced_controller(b, br.Adapter(gain=4.0, bias=0.0))
+        reset(); s = _settle(ctrl, 0.0, 0.8)
+        self.assertAlmostEqual(s, 0.0, places=6)  # outputs clamped -> only bias
+
+    def test_calibrate_picks_from_declared_grid(self):
+        b = _angle_tuned_brain()
+        sc = ev.generate_scenarios(8, seed=2)
+        gain, bias, grid = ev.calibrate_adapter(sc, ev.neural_factory(b),
+                                                gains=(1.0, 4.0), biases=(0.0, 0.05))
+        self.assertIn(gain, (1.0, 4.0))
+        self.assertIn(bias, (0.0, 0.05))
+        self.assertEqual(len(grid), 4)  # full budget reported, not expanded
+
+
 if __name__ == "__main__":
     unittest.main()
