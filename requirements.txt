@@ -1,0 +1,8 @@
+# Tested with Python 3.14 (plan proposed 3.12; pin the interpreter when the
+# full data pipeline is built). Versions below are what the current slice ran on.
+numpy==2.5.1
+scipy==1.18.0
+# Used by prepare_connectome.py (Phase 1, BLOCKED: dataset + mapping pending).
+pyarrow==25.0.1
+# Viewer only (Phase 5, not built yet). Uncomment and pin when adding viewer.py.
+# pygame

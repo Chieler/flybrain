@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+# Generated connectome cache, interface manifest, scenarios, checkpoints, outputs.
+data/
+runs/
+scenarios.json
+.worktrees/
