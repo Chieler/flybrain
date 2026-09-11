@@ -43,13 +43,13 @@ BASE_URL = ("https://storage.googleapis.com/flyem-male-cns/v1.0/"
             "connectome-data/flat-connectome")
 SOURCES = {
     "annotations": (
-        "body-annotations.feather",
+        "body-annotations-male-cns-v1.0-minconf-0.5.feather",
         f"{BASE_URL}/body-annotations-male-cns-v1.0-minconf-0.5.feather"),
     "transmitters": (
-        "body-neurotransmitters.feather",
+        "body-neurotransmitters-male-cns-v1.0.feather",
         f"{BASE_URL}/body-neurotransmitters-male-cns-v1.0.feather"),
     "weights": (
-        "connectome-weights.feather",
+        "connectome-weights-male-cns-v1.0-minconf-0.5.feather",
         f"{BASE_URL}/connectome-weights-male-cns-v1.0-minconf-0.5.feather"),
 }
 
@@ -203,6 +203,7 @@ def main(data_dir: str) -> None:
     # Signed fast weights: edge sign follows the presynaptic transmitter (Dale).
     edge_sign = sign[pre_i].astype(np.float32)
     weights_signed = sp.coo_array((wt * edge_sign, (post_i, pre_i)), shape=(n, n)).tocsr()
+    weights_signed.eliminate_zeros()
     zeroed_edges = int((edge_sign == 0).sum())
     zeroed_weight = float(wt[edge_sign == 0].sum())
 

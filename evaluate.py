@@ -12,10 +12,12 @@ shuffled-connectivity control. See README.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import random
 from dataclasses import dataclass
+from pathlib import Path
 
 from simulation import (
     ARENA_BOUND, MAX_STEERING, TARGET_RADIUS,
@@ -25,6 +27,8 @@ from simulation import (
 ARRIVAL_REWARD = 1.0
 BOUNDARY_REWARD = -1.0
 TIME_COST = 0.01  # per simulated second
+CALIBRATION_GAINS = (0.25, 0.5, 1, 2, 4, 8, 16, 32)
+CALIBRATION_BIASES = (-0.05, 0.0, 0.05)
 
 
 def episode_return(result: EpisodeResult) -> float:
@@ -134,6 +138,43 @@ def evaluate_controller(scenarios: list[Scenario], controller,
                    sum(returns) / n if n else 0.0)
 
 
+def calibrate_adapter(scenarios, controller_for, gains=CALIBRATION_GAINS,
+                      biases=CALIBRATION_BIASES):
+    """Choose the adapter with greatest mean return on frozen scenarios."""
+    candidates = []
+    for gain in gains:
+        for bias in biases:
+            controller = controller_for(gain, bias)
+            reset = getattr(controller, "reset", None)
+            summary = evaluate_controller(scenarios, controller, reset=reset)
+            candidates.append({"gain": gain, "bias": bias, "summary": summary.as_dict()})
+    best = max(candidates, key=lambda c: (
+        c["summary"]["mean_return"], -abs(c["bias"]), -c["gain"],
+    ))
+    return best, candidates
+
+
+def save_calibration(output: str, data_dir: str, seed: int, scenarios,
+                     best: dict, candidates: list, rate_params: dict) -> None:
+    """Write the frozen training set and selected adapter checkpoint."""
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    save_scenarios(str(out / "training_scenarios.json"), scenarios)
+    manifest = Path(data_dir) / "manifest.json"
+    checkpoint = {
+        "data_dir": str(Path(data_dir)),
+        "data_manifest_sha256": hashlib.sha256(manifest.read_bytes()).hexdigest(),
+        "training_seed": seed,
+        "training_scenarios": "training_scenarios.json",
+        "rate_params": rate_params,
+        "adapter": {"gain": best["gain"], "bias": best["bias"]},
+        "selection": "max mean_return, then min abs(bias), then min gain",
+        "best": best,
+        "candidates": candidates,
+    }
+    (out / "checkpoint.json").write_text(json.dumps(checkpoint, indent=2) + "\n")
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Stage 1 evaluation (baseline slice).")
     p.add_argument("--gen-scenarios", type=int, metavar="N",
@@ -142,6 +183,11 @@ if __name__ == "__main__":
     p.add_argument("--out", default="scenarios.json")
     p.add_argument("--baseline", action="store_true",
                    help="Run the conventional compass baseline over scenarios.")
+    p.add_argument("--calibrate", action="store_true",
+                   help="Run the fixed neural adapter grid and save a checkpoint.")
+    p.add_argument("--data", help="Prepared connectome directory (required for --calibrate).")
+    p.add_argument("--output", default="runs/stage1",
+                   help="Calibration artifact directory.")
     p.add_argument("--scenarios", default="scenarios.json")
     args = p.parse_args()
 
@@ -153,5 +199,18 @@ if __name__ == "__main__":
         sc = load_scenarios(args.scenarios)
         summary = evaluate_controller(sc, conventional_baseline())
         print(json.dumps(summary.as_dict(), indent=2))
+    elif args.calibrate:
+        if not args.data:
+            p.error("--data is required with --calibrate")
+        from brain import Adapter, Brain, NeuralController
+        brain = Brain.load(args.data)
+        scenarios = generate_scenarios(32, args.seed)
+        best, candidates = calibrate_adapter(
+            scenarios,
+            lambda gain, bias: NeuralController(brain, Adapter(gain=gain, bias=bias)),
+        )
+        save_calibration(args.output, args.data, args.seed, scenarios, best, candidates,
+                         rate_params=brain.params.__dict__)
+        print(json.dumps({"adapter": best, "output": args.output}, indent=2))
     else:
         p.print_help()

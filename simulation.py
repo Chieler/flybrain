@@ -123,7 +123,8 @@ def _earliest_exit_t(ax, ay, bx, by, bound) -> Optional[float]:
 
 
 def _lerp_state(a: CarState, b: CarState, t: float) -> CarState:
-    return CarState(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, b.heading)
+    return CarState(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t,
+                    wrap_angle(a.heading + wrap_angle(b.heading - a.heading) * t))
 
 
 def run_episode(
@@ -150,9 +151,10 @@ def run_episode(
 
     cap = min(scenario.timeout, MAX_SIM_TIME)
     while elapsed < cap:
+        step_dt = min(dt, cap - elapsed)
         obs = observe(state, scenario)  # recompute cues each physics update
         steering = controller(obs)
-        nxt = bicycle_step(state, steering, dt)
+        nxt = bicycle_step(state, steering, step_dt)
 
         t_hit = _earliest_hit_t(state.x, state.y, nxt.x, nxt.y,
                                 scenario.target_x, scenario.target_y, scenario.target_radius)
@@ -168,14 +170,14 @@ def run_episode(
         if event is not None:
             hit = _lerp_state(state, nxt, t_ev)
             path_length += math.hypot(hit.x - state.x, hit.y - state.y)
-            elapsed += dt * t_ev
+            elapsed += step_dt * t_ev
             if record:
                 trajectory.append((hit.x, hit.y, hit.heading))
             return EpisodeResult(event, elapsed, path_length, trajectory=trajectory)
 
         path_length += math.hypot(nxt.x - state.x, nxt.y - state.y)
         state = nxt
-        elapsed += dt
+        elapsed += step_dt
         if record:
             trajectory.append((state.x, state.y, state.heading))
 

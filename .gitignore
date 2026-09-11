@@ -4,5 +4,6 @@ __pycache__/
 data/
 runs/
 scenarios.json
+runs/
 .worktrees/
 .serena/

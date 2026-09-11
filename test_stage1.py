@@ -53,6 +53,23 @@ class TestArena(unittest.TestCase):
         self.assertEqual(r.outcome, "arrival")
         self.assertEqual(r.elapsed_time, 0.0)
 
+    def test_timeout_does_not_overshoot_final_step(self):
+        sc = sim.Scenario(sim.CarState(0, 0, 0), 100.0, 0.0, timeout=0.01)
+        r = sim.run_episode(sc, lambda o: 0.0, dt=0.02)
+        self.assertEqual(r.outcome, "timeout")
+        self.assertAlmostEqual(r.elapsed_time, 0.01)
+        self.assertAlmostEqual(r.path_length, sim.SPEED * 0.01)
+
+    def test_swept_event_records_interpolated_heading(self):
+        steering = 0.5
+        sc = sim.Scenario(sim.CarState(0, 0, 0), 0.03, 0.0,
+                          target_radius=0.005, timeout=1.0)
+        r = sim.run_episode(sc, lambda o: steering, dt=0.02, record=True)
+        t = r.elapsed_time / 0.02
+        expected = sim.SPEED / sim.WHEELBASE * math.tan(steering) * 0.02 * t
+        self.assertEqual(r.outcome, "arrival")
+        self.assertAlmostEqual(r.trajectory[-1][2], expected)
+
 
 class TestScenarios(unittest.TestCase):
     def test_deterministic_generation(self):
@@ -71,6 +88,19 @@ class TestScenarios(unittest.TestCase):
         sc = ev.generate_scenarios(20, seed=3)
         summary = ev.evaluate_controller(sc, ev.conventional_baseline())
         self.assertGreaterEqual(summary.arrivals, 19)
+
+    def test_calibration_selects_best_return_then_simple_adapter(self):
+        sc = [sim.Scenario(sim.CarState(0, 0, 0), 5.0, 0.0)]
+
+        def controller_for(gain, bias):
+            return (lambda obs: 0.0) if gain == 0.5 else (lambda obs: sim.MAX_STEERING)
+
+        best, candidates = ev.calibrate_adapter(
+            sc, controller_for, gains=(0.25, 0.5), biases=(-0.05, 0.0, 0.05),
+        )
+        self.assertEqual(len(candidates), 6)
+        self.assertEqual(best["gain"], 0.5)
+        self.assertEqual(best["bias"], 0.0)
 
 
 class TestBrain(unittest.TestCase):
@@ -123,6 +153,10 @@ class TestBrain(unittest.TestCase):
         self.assertEqual(prep.transmitter_sign("unclear", 0.9), 0)
         self.assertEqual(prep.transmitter_sign("dopamine", 0.9), 0)       # modulatory
         self.assertEqual(prep.transmitter_sign(None, None), 0)
+
+    def test_source_filenames_match_download_urls(self):
+        for filename, url in prep.SOURCES.values():
+            self.assertEqual(filename, url.rsplit("/", 1)[-1])
 
     def test_adapter_symmetry(self):
         a = br.Adapter(gain=2.0, bias=0.0)
