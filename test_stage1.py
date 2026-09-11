@@ -9,6 +9,7 @@ import scipy.sparse as sp
 import simulation as sim
 import brain as br
 import evaluate as ev
+import prepare_connectome as prep
 
 
 class TestArena(unittest.TestCase):
@@ -113,6 +114,15 @@ class TestBrain(unittest.TestCase):
         self.assertAlmostEqual(np.abs(Wn[0]).sum(), 1.0, places=5)  # nonempty -> 1
         self.assertEqual(np.abs(Wn[1]).sum(), 0.0)                  # empty stays 0
         self.assertAlmostEqual(np.abs(Wn[2]).sum(), 1.0, places=5)
+
+    def test_transmitter_sign_policy(self):
+        self.assertEqual(prep.transmitter_sign("acetylcholine", 0.9), 1)
+        self.assertEqual(prep.transmitter_sign("gaba", 0.9), -1)
+        self.assertEqual(prep.transmitter_sign("glutamate", 0.6), -1)
+        self.assertEqual(prep.transmitter_sign("acetylcholine", 0.4), 0)  # low conf
+        self.assertEqual(prep.transmitter_sign("unclear", 0.9), 0)
+        self.assertEqual(prep.transmitter_sign("dopamine", 0.9), 0)       # modulatory
+        self.assertEqual(prep.transmitter_sign(None, None), 0)
 
     def test_adapter_symmetry(self):
         a = br.Adapter(gain=2.0, bias=0.0)
