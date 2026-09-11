@@ -28,7 +28,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
+import re
 from pathlib import Path
 
 import numpy as np
@@ -59,6 +61,38 @@ NEGATIVE_NT = {"gaba", "glutamate"}  # glutamate sign is an approximation
 # navigation literature. Roles are candidates pending Phase 3 verification.
 INPUT_TYPES = {"heading": ["EPG"], "goal": ["FC2A", "FC2B", "FC2C"]}
 OUTPUT_TYPE = "PFL3"  # split L/R by somaSide
+
+# Anatomical position parsed from the `instance` string:
+#   EPG(PB08)_R2  -> protocerebral-bridge glomerulus index 2  (heading)
+#   FC2B_C2_L     -> fan-shaped-body column index 2           (goal)
+_PB_GLOM = re.compile(r"_[LR](\d+)")     # PB glomerulus index
+_FB_COL = re.compile(r"_C(\d+)")          # FB column index
+
+# Coordinate convention (a DOCUMENTED, tunable modeling assumption, moderate
+# confidence): map each anatomical index to a uniform azimuth tiling of [0, 2pi),
+# counterclockwise-positive, origin at index 1, identical for L/R hemisphere
+# copies. Absolute offset and handedness are NOT asserted here; Phase 3 resolves
+# them behaviorally (rotation-consistency check + adapter sign/gain calibration).
+# Grounded in the EB/PB heading-bump and FB goal-column literature (see manifest
+# references); this is not a per-neuron measured preferred direction.
+ANGLE_CONVENTION = (
+    "azimuth = 2*pi*(anatomical_index - 1)/n_indices, ccw-positive, origin at "
+    "index 1, identical for L/R copies; absolute offset+handedness resolved "
+    "behaviorally in Phase 3, not asserted.")
+ANGLE_CONFIDENCE = "moderate (anatomical tiling assumption, behaviorally tuned)"
+ANGLE_REFERENCES = [
+    "MaleCNS v1.0 annotations (PB glomerulus / FB column in instance names)",
+    "Heading/goal FC2/PFL3 circuit: https://www.nature.com/articles/s41586-023-07006-3",
+]
+
+
+def _indices_from_instances(instances: list[str | None], pattern: re.Pattern):
+    """Parse one integer anatomical index per neuron; None if absent."""
+    out = []
+    for s in instances:
+        m = pattern.search(s) if s else None
+        out.append(int(m.group(1)) if m else None)
+    return out
 
 
 def sha256(path: Path) -> str:
@@ -103,10 +137,12 @@ def main(data_dir: str) -> None:
             raise FileNotFoundError(f"missing {p}; download it first")
 
     # --- Retained neuron set + contiguous index ---
-    ann = feather.read_table(ann_path, columns=["bodyId", "type", "somaSide", "superclass"])
+    ann = feather.read_table(ann_path,
+                             columns=["bodyId", "type", "instance", "somaSide", "superclass"])
     body = np.asarray(ann.column("bodyId").to_pylist(), dtype=np.int64)
     superclass = ann.column("superclass").to_pylist()
     types = ann.column("type").to_pylist()
+    instances = ann.column("instance").to_pylist()
     sides = ann.column("somaSide").to_pylist()
 
     keep = np.array([sc is None or not sc.startswith("vnc") for sc in superclass])
@@ -115,6 +151,7 @@ def main(data_dir: str) -> None:
     order = np.argsort(ids_unsorted, kind="stable")  # sort stable IDs before indexing
     ids = ids_unsorted[order]
     kept_types = [types[keep_pos[i]] for i in order]
+    kept_instances = [instances[keep_pos[i]] for i in order]
     kept_sides = [sides[keep_pos[i]] for i in order]
     n = len(ids)
     id_to_idx = {int(b): i for i, b in enumerate(ids)}
@@ -169,34 +206,43 @@ def main(data_dir: str) -> None:
     zeroed_edges = int((edge_sign == 0).sum())
     zeroed_weight = float(wt[edge_sign == 0].sum())
 
-    # --- Candidate interface map (populations only; NO preferred angles) ---
+    # --- Candidate interface map with anatomy-derived preferred angles ---
     type_arr = np.array(kept_types, dtype=object)
     side_arr = np.array(kept_sides, dtype=object)
 
-    def indices_for_types(ts):
-        out = []
-        for t in ts:
-            out.extend(int(i) for i in np.where(type_arr == t)[0])
-        return sorted(out)
+    def build_input(types_list, pattern):
+        """Return (indices, preferred_angles) for neurons whose instance carries
+        an anatomical index, angles by the documented uniform-tiling convention."""
+        idx, raw = [], []
+        for t in types_list:
+            for i in np.where(type_arr == t)[0]:
+                anat = _indices_from_instances([kept_instances[i]], pattern)[0]
+                if anat is not None:
+                    idx.append(int(i))
+                    raw.append(anat)
+        if not idx:
+            return [], []
+        n_idx = max(raw)  # observed index range sets the tiling resolution
+        angles = [float(2.0 * math.pi * (r - 1) / n_idx) for r in raw]
+        # Sort by index for stable output; keep angle alignment.
+        order2 = sorted(range(len(idx)), key=lambda k: idx[k])
+        return [idx[k] for k in order2], [angles[k] for k in order2]
 
-    heading_idx = indices_for_types(INPUT_TYPES["heading"])
-    goal_idx = indices_for_types(INPUT_TYPES["goal"])
+    heading_idx, heading_ang = build_input(INPUT_TYPES["heading"], _PB_GLOM)
+    goal_idx, goal_ang = build_input(INPUT_TYPES["goal"], _FB_COL)
     pfl3 = np.where(type_arr == OUTPUT_TYPE)[0]
     left_idx = sorted(int(i) for i in pfl3 if side_arr[i] == "L")
     right_idx = sorted(int(i) for i in pfl3 if side_arr[i] == "R")
 
     interface = {
-        "status": "PARTIAL - populations identified, preferred angles UNRESOLVED",
-        "preferred_angle_gap": (
-            "No clean central-complex column/phase field in male annotations to "
-            "assign per-neuron preferred angles for heading (EPG) and goal (FC2) "
-            "inputs. Plan forbids assigning angles by sorted ID. Needs domain "
-            "evidence (CX wedge/column phase + coordinate convention) OR an "
-            "explicitly-artificial mapping approved as a declared experiment."),
-        "heading_input": {"types": INPUT_TYPES["heading"], "indices": heading_idx,
-                          "preferred_angles": None},
-        "goal_input": {"types": INPUT_TYPES["goal"], "indices": goal_idx,
-                      "preferred_angles": None},
+        "status": "anatomy-derived preferred angles (documented convention)",
+        "angle_convention": ANGLE_CONVENTION,
+        "angle_confidence": ANGLE_CONFIDENCE,
+        "angle_references": ANGLE_REFERENCES,
+        "heading_input": {"types": INPUT_TYPES["heading"], "source": "PB glomerulus",
+                          "indices": heading_idx, "preferred_angles": heading_ang},
+        "goal_input": {"types": INPUT_TYPES["goal"], "source": "FB column",
+                      "indices": goal_idx, "preferred_angles": goal_ang},
         "left_output": {"type": OUTPUT_TYPE, "side": "L", "indices": left_idx},
         "right_output": {"type": OUTPUT_TYPE, "side": "R", "indices": right_idx},
         "output_direction_note": (
@@ -205,6 +251,7 @@ def main(data_dir: str) -> None:
     }
     for grp in (heading_idx, goal_idx, left_idx, right_idx):
         assert all(0 <= i < n for i in grp)  # mapped indices belong to retained graph
+    assert len(heading_idx) == len(heading_ang) and len(goal_idx) == len(goal_ang)
 
     # --- Save atomically ---
     _save_npz_atomic(data / "counts.npz", counts)
