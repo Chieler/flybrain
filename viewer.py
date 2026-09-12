@@ -31,6 +31,8 @@ ARENA = (60, 60, 70)
 TARGET = (70, 200, 120)
 CAR = (240, 200, 80)
 PATH = (90, 110, 160)
+BUILDING = (48, 50, 58)
+ROAD = (82, 82, 90)
 
 _SCALE = (WIN - 2 * MARGIN) / (2 * ARENA_BOUND)
 
@@ -39,6 +41,12 @@ def _to_screen(wx: float, wy: float) -> tuple[int, int]:
     sx = MARGIN + (wx + ARENA_BOUND) * _SCALE
     sy = WIN - (MARGIN + (wy + ARENA_BOUND) * _SCALE)  # flip: north is up
     return int(sx), int(sy)
+
+
+def _rect_to_screen(rect):
+    left, bottom = _to_screen(rect.min_x, rect.min_y)
+    right, top = _to_screen(rect.max_x, rect.max_y)
+    return pygame.Rect(left, top, right - left, bottom - top)
 
 
 def _car_triangle(x: float, y: float, heading: float) -> list[tuple[int, int]]:
@@ -98,6 +106,82 @@ def replay(scenario, controller, reset=None, fps: int = 60) -> None:
     pygame.quit()
 
 
+def _make_stage2_controller(kind: str, avoidance_gain: float, brake_distance: float,
+                            data: str | None, stage1_checkpoint: str | None):
+    import evaluate_stage2 as ev2
+    from brain import Stage2Adapter, Stage2NeuralController
+    if kind == "baseline":
+        adapter = Stage2Adapter(0.0, 0.0, avoidance_gain, brake_distance)
+        return ev2.direct_compass_controller(adapter), None
+    cp = ev.load_checkpoint(stage1_checkpoint)
+    from brain import Brain
+    brain = Brain.load(data or cp["data_dir"], cp["params"])
+    adapter = Stage2Adapter(cp["gain"], cp["bias"], avoidance_gain, brake_distance)
+    ctrl = Stage2NeuralController(brain, adapter)
+    return ctrl, ctrl.reset
+
+
+def replay_stage2(args) -> None:
+    import json
+    from pathlib import Path
+
+    import evaluate_stage2 as ev2
+    from street import initial_layouts, run_street_episode
+
+    layouts = initial_layouts()
+    scenario = ev2.load_scenarios(args.scenarios)[args.index]
+    layout = layouts[scenario.layout]
+
+    avoidance_gain, brake_distance = 0.5, 4.0
+    if Path(args.stage2_checkpoint).exists():
+        cp = json.loads(Path(args.stage2_checkpoint).read_text())
+        avoidance_gain, brake_distance = cp["avoidance_gain"], cp["brake_distance"]
+
+    controller, reset = _make_stage2_controller(
+        args.controller, avoidance_gain, brake_distance, args.data, args.checkpoint)
+    if reset is not None:
+        reset()
+    result = run_street_episode(scenario, layout, controller, record=True)
+    traj = result.trajectory or []
+
+    pygame.init()
+    screen = pygame.display.set_mode((WIN, WIN))
+    pygame.display.set_caption(
+        f"flybrain stage2 — {result.outcome} @ {result.elapsed_time:.1f}s")
+    clock = pygame.time.Clock()
+    target = _to_screen(scenario.target_x, scenario.target_y)
+    from simulation import TARGET_RADIUS as _TR
+    tgt_r = int(scenario.target_radius * _SCALE) or int(_TR * _SCALE)
+
+    i, frames, running = 0, 0, True
+    while running:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT or (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
+                running = False
+
+        screen.fill(BG)
+        pygame.draw.rect(screen, ROAD, (MARGIN, MARGIN, WIN - 2 * MARGIN, WIN - 2 * MARGIN))
+        for building in layout.buildings:
+            pygame.draw.rect(screen, BUILDING, _rect_to_screen(building))
+        pygame.draw.circle(screen, TARGET, target, tgt_r, 2)
+        if i > 1:
+            pygame.draw.lines(screen, PATH, False,
+                              [_to_screen(x, y) for x, y, _, _ in traj[:i]], 2)
+        if traj:
+            x, y, h, _ = traj[min(i, len(traj) - 1)]
+            pygame.draw.polygon(screen, CAR, _car_triangle(x, y, h))
+
+        pygame.display.flip()
+        clock.tick(args.fps)
+        if i < len(traj) - 1:
+            i += 1
+        frames += 1
+        if args.frames is not None and frames >= args.frames:
+            running = False
+
+    pygame.quit()
+
+
 def _pick_scenario(args):
     if args.scenarios:
         return ev.load_scenarios(args.scenarios)[args.index]
@@ -113,9 +197,15 @@ if __name__ == "__main__":
     p.add_argument("--data", help="Prepared connectome dir (neural controller).")
     p.add_argument("--checkpoint", default="checkpoint.json")
     p.add_argument("--fps", type=int, default=60)
+    p.add_argument("--stage", choices=(1, 2), type=int, default=1)
+    p.add_argument("--stage2-checkpoint", default="runs/stage2/checkpoint.json")
+    p.add_argument("--frames", type=int, help="Stop after this many replay frames (smoke tests).")
     args = p.parse_args()
 
-    if args.controller == "neural" and not (args.data or args.checkpoint):
-        p.error("--controller neural needs --data or a --checkpoint carrying data_dir")
-    controller, reset = _make_controller(args.controller, args.data, args.checkpoint)
-    replay(_pick_scenario(args), controller, reset, args.fps)
+    if args.stage == 2:
+        replay_stage2(args)
+    else:
+        if args.controller == "neural" and not (args.data or args.checkpoint):
+            p.error("--controller neural needs --data or a --checkpoint carrying data_dir")
+        controller, reset = _make_controller(args.controller, args.data, args.checkpoint)
+        replay(_pick_scenario(args), controller, reset, args.fps)

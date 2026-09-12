@@ -176,5 +176,13 @@ class TestStage2Controls(unittest.TestCase):
             self.assertEqual(checkpoint["heldout_scenarios_sha256"], ev2.sha256(str(paths[2])))
 
 
+class TestStage2Viewer(unittest.TestCase):
+    def test_building_rect_has_positive_screen_size(self):
+        import viewer
+        rect = viewer._rect_to_screen(st.Rect(-5.0, -4.0, 2.0, 3.0))
+        self.assertGreater(rect.width, 0)
+        self.assertGreater(rect.height, 0)
+
+
 if __name__ == "__main__":
     unittest.main()
