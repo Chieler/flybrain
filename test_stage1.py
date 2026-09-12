@@ -1,6 +1,8 @@
 """Small deterministic checks for the Stage 1 arena + neural runtime slice."""
 
+import json
 import math
+import tempfile
 import unittest
 
 import numpy as np
@@ -241,6 +243,16 @@ class TestControls(unittest.TestCase):
         self.assertIn(gain, (1.0, 4.0))
         self.assertIn(bias, (0.0, 0.05))
         self.assertEqual(len(grid), 4)  # full budget reported, not expanded
+
+    def test_load_checkpoint_reads_nested_calibration_artifact(self):
+        with tempfile.NamedTemporaryFile(mode="w") as f:
+            json.dump({"adapter": {"gain": 32, "bias": -0.05},
+                       "rate_params": {"neural_dt": 0.01, "tau": 0.05}}, f)
+            f.flush()
+            checkpoint = ev.load_checkpoint(f.name)
+        self.assertEqual(checkpoint["gain"], 32)
+        self.assertEqual(checkpoint["bias"], -0.05)
+        self.assertEqual(checkpoint["params"].neural_dt, 0.01)
 
 
 if __name__ == "__main__":

@@ -267,6 +267,11 @@ def save_checkpoint(path: str, gain: float, bias: float,
 def load_checkpoint(path: str) -> dict:
     with open(path) as f:
         cp = json.load(f)
+    if "adapter" in cp:
+        cp.setdefault("gain", cp["adapter"]["gain"])
+        cp.setdefault("bias", cp["adapter"]["bias"])
+    if "rate_params" in cp:
+        cp.setdefault("params", cp["rate_params"])
     cp["params"] = RateParams(**cp.get("params", {}))
     return cp
 
