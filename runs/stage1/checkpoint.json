@@ -1,0 +1,345 @@
+{
+  "data_dir": "data/malecns-v1.0",
+  "data_manifest_sha256": "e3ae4ae64b9b59ce322ecc889e870bddab9990abe7bccee28d22dfbc3f1420f2",
+  "training_seed": 0,
+  "training_scenarios": "training_scenarios.json",
+  "rate_params": {
+    "neural_dt": 0.01,
+    "tau": 0.05,
+    "baseline": 0.01,
+    "recurrent_gain": 1.0,
+    "input_gain": 1.0
+  },
+  "adapter": {
+    "gain": 32,
+    "bias": -0.05
+  },
+  "selection": "max mean_return, then min abs(bias), then min gain",
+  "best": {
+    "gain": 32,
+    "bias": -0.05,
+    "summary": {
+      "trials": 32,
+      "arrivals": 7,
+      "boundaries": 18,
+      "timeouts": 7,
+      "mean_arrival_time": 8.05726694483334,
+      "mean_route_length": 16.114533889666735,
+      "mean_return": -0.5288193873558955
+    }
+  },
+  "candidates": [
+    {
+      "gain": 0.25,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 0,
+        "boundaries": 32,
+        "timeouts": 0,
+        "mean_arrival_time": null,
+        "mean_route_length": null,
+        "mean_return": -1.1532545161392111
+      }
+    },
+    {
+      "gain": 0.25,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 2,
+        "boundaries": 30,
+        "timeouts": 0,
+        "mean_arrival_time": 4.23434406540705,
+        "mean_route_length": 8.468688130814128,
+        "mean_return": -1.0116699324918748
+      }
+    },
+    {
+      "gain": 0.25,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 1,
+        "boundaries": 31,
+        "timeouts": 0,
+        "mean_arrival_time": 2.8194676710833084,
+        "mean_route_length": 5.638935342166613,
+        "mean_return": -1.0838035464360414
+      }
+    },
+    {
+      "gain": 0.5,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 0,
+        "boundaries": 32,
+        "timeouts": 0,
+        "mean_arrival_time": null,
+        "mean_route_length": null,
+        "mean_return": -1.1534446520858994
+      }
+    },
+    {
+      "gain": 0.5,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 2,
+        "boundaries": 30,
+        "timeouts": 0,
+        "mean_arrival_time": 4.237879293760758,
+        "mean_route_length": 8.475758587521547,
+        "mean_return": -1.011413183821816
+      }
+    },
+    {
+      "gain": 0.5,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 1,
+        "boundaries": 31,
+        "timeouts": 0,
+        "mean_arrival_time": 2.819253949962337,
+        "mean_route_length": 5.638507899924669,
+        "mean_return": -1.0835241163186273
+      }
+    },
+    {
+      "gain": 1,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 0,
+        "boundaries": 32,
+        "timeouts": 0,
+        "mean_arrival_time": null,
+        "mean_route_length": null,
+        "mean_return": -1.1549457454127166
+      }
+    },
+    {
+      "gain": 1,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 2,
+        "boundaries": 30,
+        "timeouts": 0,
+        "mean_arrival_time": 4.253119289915174,
+        "mean_route_length": 8.506238579830377,
+        "mean_return": -1.011308790175778
+      }
+    },
+    {
+      "gain": 1,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 1,
+        "boundaries": 31,
+        "timeouts": 0,
+        "mean_arrival_time": 2.819049005238556,
+        "mean_route_length": 5.638098010477108,
+        "mean_return": -1.083146214560788
+      }
+    },
+    {
+      "gain": 2,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 0,
+        "boundaries": 32,
+        "timeouts": 0,
+        "mean_arrival_time": null,
+        "mean_route_length": null,
+        "mean_return": -1.1603624888324051
+      }
+    },
+    {
+      "gain": 2,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 2,
+        "boundaries": 30,
+        "timeouts": 0,
+        "mean_arrival_time": 4.331127679262932,
+        "mean_route_length": 8.662255358525895,
+        "mean_return": -1.011165987568995
+      }
+    },
+    {
+      "gain": 2,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 1,
+        "boundaries": 31,
+        "timeouts": 0,
+        "mean_arrival_time": 2.8194906688080814,
+        "mean_route_length": 5.638981337616161,
+        "mean_return": -1.0819437016462246
+      }
+    },
+    {
+      "gain": 4,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 2,
+        "boundaries": 29,
+        "timeouts": 1,
+        "mean_arrival_time": 6.12281883774887,
+        "mean_route_length": 12.245637675497818,
+        "mean_return": -0.9999338079031724
+      }
+    },
+    {
+      "gain": 4,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 1,
+        "boundaries": 31,
+        "timeouts": 0,
+        "mean_arrival_time": 2.9100232101413974,
+        "mean_route_length": 5.820046420282792,
+        "mean_return": -1.0751852478396313
+      }
+    },
+    {
+      "gain": 4,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 2,
+        "boundaries": 29,
+        "timeouts": 1,
+        "mean_arrival_time": 3.7669860569179106,
+        "mean_route_length": 7.53397211383583,
+        "mean_return": -0.987295148225096
+      }
+    },
+    {
+      "gain": 8,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 3,
+        "boundaries": 27,
+        "timeouts": 2,
+        "mean_arrival_time": 5.75524896883126,
+        "mean_route_length": 11.510497937662592,
+        "mean_return": -0.9018398610633102
+      }
+    },
+    {
+      "gain": 8,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 2,
+        "boundaries": 30,
+        "timeouts": 0,
+        "mean_arrival_time": 4.825671777879849,
+        "mean_route_length": 9.651343555759755,
+        "mean_return": -1.011813542853304
+      }
+    },
+    {
+      "gain": 8,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 4,
+        "boundaries": 25,
+        "timeouts": 3,
+        "mean_arrival_time": 4.545456954396318,
+        "mean_route_length": 9.090913908792666,
+        "mean_return": -0.8011939217082251
+      }
+    },
+    {
+      "gain": 16,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 3,
+        "boundaries": 21,
+        "timeouts": 8,
+        "mean_arrival_time": 4.747053399931028,
+        "mean_route_length": 9.4941067998621,
+        "mean_return": -0.7398243178088847
+      }
+    },
+    {
+      "gain": 16,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 5,
+        "boundaries": 27,
+        "timeouts": 0,
+        "mean_arrival_time": 6.010479474882187,
+        "mean_route_length": 12.020958949764433,
+        "mean_return": -0.8261781780736073
+      }
+    },
+    {
+      "gain": 16,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 4,
+        "boundaries": 27,
+        "timeouts": 1,
+        "mean_arrival_time": 4.759920052913601,
+        "mean_route_length": 9.519840105827239,
+        "mean_return": -0.8582068484786896
+      }
+    },
+    {
+      "gain": 32,
+      "bias": -0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 7,
+        "boundaries": 18,
+        "timeouts": 7,
+        "mean_arrival_time": 8.05726694483334,
+        "mean_route_length": 16.114533889666735,
+        "mean_return": -0.5288193873558955
+      }
+    },
+    {
+      "gain": 32,
+      "bias": 0.0,
+      "summary": {
+        "trials": 32,
+        "arrivals": 5,
+        "boundaries": 23,
+        "timeouts": 4,
+        "mean_arrival_time": 5.763738122915566,
+        "mean_route_length": 11.527476245831206,
+        "mean_return": -0.7107915387477759
+      }
+    },
+    {
+      "gain": 32,
+      "bias": 0.05,
+      "summary": {
+        "trials": 32,
+        "arrivals": 1,
+        "boundaries": 31,
+        "timeouts": 0,
+        "mean_arrival_time": 6.6391938571968545,
+        "mean_route_length": 13.278387714393828,
+        "mean_return": -1.0904665262735282
+      }
+    }
+  ]
+}
