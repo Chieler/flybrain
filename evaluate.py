@@ -16,7 +16,10 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import multiprocessing as mp
+import os
 import random
+import tempfile
 from dataclasses import dataclass
 
 import numpy as np
@@ -255,6 +258,110 @@ def shuffle_connectivity(W, seed: int):
     return sp.csr_array(shuffled)
 
 
+# --- Parallel episode execution (independent scenarios across CPU cores) ---
+#
+# The controls run is CPU/memory-bandwidth bound on the ~20M-edge sparse matvec,
+# but every episode is independent, so scenarios (and calibration grid cells)
+# fan out across cores. Each Pool is pinned to ONE Brain variant via its
+# initializer, so the 20M-edge load/normalize happens once per worker and the
+# brain is reused across all its episodes. Shuffled connectivity is precomputed
+# to a temp npz once, so workers skip the O(edges) Python shuffle loop.
+# ponytail: worker holds 1 (base) or 2 (base+shuffled) CSR copies (~160MB each);
+#           at jobs=8 that's ~2.5GB in the shuffled phase. Lower --jobs if tight.
+
+_WORKER_BRAIN: Brain | None = None
+
+
+def _init_worker(brain_spec: dict) -> None:
+    """Pool initializer: build the pinned Brain once per worker process."""
+    global _WORKER_BRAIN
+    params = RateParams(**brain_spec["params"])
+    base = Brain.load(brain_spec["data_dir"], params)
+    npz = brain_spec.get("shuffled_npz")
+    if npz is None:
+        _WORKER_BRAIN = base
+    else:  # shuffled variant reuses base's input/output maps, swaps wiring only
+        _WORKER_BRAIN = Brain(sp.load_npz(npz), base.input_map,
+                              base.output_map, params)
+
+
+def _make_controller(mode: str, gain: float, bias: float):
+    """Build a (controller, reset) on the worker's pinned Brain."""
+    brain = _WORKER_BRAIN
+    adapter = Adapter(gain=gain, bias=bias)
+    if mode == "neural":
+        ctrl = NeuralController(brain, adapter)
+        return ctrl, ctrl.reset
+    if mode == "cue_withheld":
+        return cue_withheld_controller(brain, adapter)
+    if mode == "pathway_silenced":
+        return pathway_silenced_controller(brain, adapter)
+    raise ValueError(f"unknown neural mode {mode!r}")
+
+
+def _run_one(task: tuple) -> tuple:
+    """Run a single episode; return only the picklable scalars we aggregate."""
+    mode, gain, bias, s_dict = task
+    controller, reset = _make_controller(mode, gain, bias)
+    if reset is not None:
+        reset()
+    r = run_episode(scenario_from_dict(s_dict), controller)
+    return (r.outcome, r.elapsed_time, r.path_length, episode_return(r))
+
+
+def _summary_from_rows(rows: list[tuple]) -> Summary:
+    """Aggregate _run_one outputs into a Summary (same math as evaluate_controller)."""
+    arrivals = boundaries = timeouts = 0
+    arrival_times: list[float] = []
+    route_lengths: list[float] = []
+    returns: list[float] = []
+    for outcome, elapsed, path_length, ret in rows:
+        returns.append(ret)
+        if outcome == "arrival":
+            arrivals += 1
+            arrival_times.append(elapsed)
+            route_lengths.append(path_length)
+        elif outcome == "boundary":
+            boundaries += 1
+        else:
+            timeouts += 1
+    n = len(rows)
+    mean = lambda xs: (sum(xs) / len(xs)) if xs else None
+    return Summary(n, arrivals, boundaries, timeouts,
+                   mean(arrival_times), mean(route_lengths),
+                   sum(returns) / n if n else 0.0)
+
+
+def _pool_summary(pool, mode: str, gain: float, bias: float,
+                  scenarios: list[Scenario]) -> Summary:
+    """Parallel evaluate_controller for a neural `mode` over `scenarios`."""
+    tasks = [(mode, gain, bias, scenario_to_dict(s)) for s in scenarios]
+    return _summary_from_rows(pool.map(_run_one, tasks, chunksize=1))
+
+
+def _pool_calibrate(pool, scenarios: list[Scenario],
+                    gains=CALIB_GAINS, biases=CALIB_BIASES):
+    """Parallel calibrate_adapter: flatten grid×scenarios into one balanced batch.
+
+    Same grid, same tie-break as calibrate_adapter (max mean_return, then |bias|,
+    then gain), so results are identical to the serial path.
+    """
+    cells = [(g, b) for g in gains for b in biases]
+    s_dicts = [scenario_to_dict(s) for s in scenarios]
+    tasks = [("neural", g, b, sd) for (g, b) in cells for sd in s_dicts]
+    rows = pool.map(_run_one, tasks, chunksize=1)
+    per = len(s_dicts)
+    grid, best = [], None
+    for i, (g, b) in enumerate(cells):
+        summ = _summary_from_rows(rows[i * per:(i + 1) * per])
+        grid.append({"gain": g, "bias": b, "mean_return": summ.mean_return,
+                     "arrivals": summ.arrivals, "trials": summ.trials})
+        key = (summ.mean_return, -abs(b), -g)
+        if best is None or key > best[0]:
+            best = (key, g, b)
+    return best[1], best[2], grid
+
+
 # --- Checkpoint I/O ---
 
 def save_checkpoint(path: str, gain: float, bias: float,
@@ -278,37 +385,47 @@ def load_checkpoint(path: str) -> dict:
 
 def run_controls(data_dir: str, gain: float, bias: float, params: RateParams,
                  heldout: list[Scenario], calib: list[Scenario],
-                 shuffle_seeds=(1, 2, 3)) -> dict:
+                 shuffle_seeds=(1, 2, 3), jobs: int | None = None) -> dict:
     """Held-out neural controller plus every declared control/intervention.
 
     Shuffled connectivity is RE-calibrated with exactly the same grid and
     interfaces (three fixed seeds); all other controls use the frozen adapter.
     Returns {name: Summary.as_dict()}.
+
+    Neural episodes fan out across `jobs` processes (default: all cores). Results
+    are identical to the serial path — episodes are independent and deterministic.
     """
-    W = sp.load_npz(f"{data_dir}/weights_signed.npz")
-    base = Brain.load(data_dir, params)
-    adapter = Adapter(gain=gain, bias=bias)
+    jobs = jobs or os.cpu_count() or 1
     results: dict = {}
 
-    def record(name, controller, reset):
-        results[name] = evaluate_controller(heldout, controller, reset).as_dict()
+    # Non-neural controls: no matvec, trivially fast — keep serial.
+    results["conventional"] = evaluate_controller(heldout, conventional_baseline()).as_dict()
+    results["zero"] = evaluate_controller(heldout, *zero_steering()).as_dict()
+    results["random"] = evaluate_controller(heldout, *random_steering(seed=0)).as_dict()
 
-    ctrl = NeuralController(base, adapter)
-    record("neural", ctrl, ctrl.reset)
-    record("conventional", conventional_baseline(), None)
-    record("zero", *zero_steering())
-    record("random", *random_steering(seed=0))
-    record("cue_withheld", *cue_withheld_controller(base, adapter))
-    record("pathway_silenced", *pathway_silenced_controller(base, adapter))
+    # Neural + interventions on the base graph: one pool pinned to the base Brain.
+    base_spec = {"data_dir": data_dir, "params": params.__dict__}
+    with mp.Pool(jobs, initializer=_init_worker, initargs=(base_spec,)) as pool:
+        results["neural"] = _pool_summary(pool, "neural", gain, bias, heldout).as_dict()
+        results["cue_withheld"] = _pool_summary(pool, "cue_withheld", gain, bias, heldout).as_dict()
+        results["pathway_silenced"] = _pool_summary(pool, "pathway_silenced", gain, bias, heldout).as_dict()
 
+    # Shuffled-connectivity controls: precompute each shuffled W once to a temp
+    # npz (so workers skip the O(edges) shuffle loop), then re-calibrate + evaluate.
+    W = sp.load_npz(f"{data_dir}/weights_signed.npz")
     for seed in shuffle_seeds:
-        sh = Brain(shuffle_connectivity(W, seed), base.input_map,
-                   base.output_map, params)
-        g, b, _ = calibrate_adapter(calib, neural_factory(sh))
-        c = NeuralController(sh, Adapter(gain=g, bias=b))
+        fd, npz_path = tempfile.mkstemp(suffix=".npz")
+        os.close(fd)
+        sp.save_npz(npz_path, sp.csr_array(shuffle_connectivity(W, seed)))
+        spec = {**base_spec, "shuffled_npz": npz_path}
+        try:
+            with mp.Pool(jobs, initializer=_init_worker, initargs=(spec,)) as pool:
+                g, b, _ = _pool_calibrate(pool, calib)
+                summ = _pool_summary(pool, "neural", g, b, heldout)
+        finally:
+            os.unlink(npz_path)
         results[f"shuffled_seed{seed}"] = {
-            "calibrated_gain": g, "calibrated_bias": b,
-            **evaluate_controller(heldout, c, c.reset).as_dict()}
+            "calibrated_gain": g, "calibrated_bias": b, **summ.as_dict()}
     return results
 
 
@@ -329,6 +446,9 @@ if __name__ == "__main__":
     p.add_argument("--calib-scenarios", help="Calibration scenarios (defaults to --scenarios).")
     p.add_argument("--data", help="Prepared connectome dir (needed for --calibrate/--controls).")
     p.add_argument("--checkpoint", default="checkpoint.json")
+    p.add_argument("--jobs", type=int, default=None,
+                   help="Parallel worker processes for neural episodes "
+                        "(default: all CPU cores). Use 1 to force serial.")
     args = p.parse_args()
 
     if args.gen_scenarios:
@@ -343,9 +463,12 @@ if __name__ == "__main__":
         if not args.data:
             p.error("--calibrate needs --data (prepared connectome dir)")
         calib = load_scenarios(args.calib_scenarios or args.scenarios)
-        brain = Brain.load(args.data)
-        gain, bias, grid = calibrate_adapter(calib, neural_factory(brain))
-        save_checkpoint(args.checkpoint, gain, bias, brain.params, args.data)
+        params = RateParams()
+        jobs = args.jobs or os.cpu_count() or 1
+        spec = {"data_dir": args.data, "params": params.__dict__}
+        with mp.Pool(jobs, initializer=_init_worker, initargs=(spec,)) as pool:
+            gain, bias, grid = _pool_calibrate(pool, calib)
+        save_checkpoint(args.checkpoint, gain, bias, params, args.data)
         print(json.dumps({"gain": gain, "bias": bias, "budget": len(grid),
                           "checkpoint": args.checkpoint}, indent=2))
     elif args.controls:
@@ -355,7 +478,7 @@ if __name__ == "__main__":
         heldout = load_scenarios(args.scenarios)
         calib = load_scenarios(args.calib_scenarios or args.scenarios)
         res = run_controls(args.data, cp["gain"], cp["bias"], cp["params"],
-                           heldout, calib)
+                           heldout, calib, jobs=args.jobs)
         with open(args.out if args.out != "scenarios.json" else "results.json", "w") as f:
             json.dump(res, f, indent=2)
         print(json.dumps(res, indent=2))
