@@ -1,0 +1,1402 @@
+[
+  {
+    "layout": "cross",
+    "start": {
+      "x": -21.0,
+      "y": 0.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-000"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 0.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-001"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-002"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-003"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 0.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-004"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-005"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 21.0,
+      "y": 0.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-006"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-007"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 0.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-008"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 21.0,
+      "y": 0.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-009"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": -21.0,
+      "y": 0.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-010"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": -21.0,
+      "y": 0.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-cross-011"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-000"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-001"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-002"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-003"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-004"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-005"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-006"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-007"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": -10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-008"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-009"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-010"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-011"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-012"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-013"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-014"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-015"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-016"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-017"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-018"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-019"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-020"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-021"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-022"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-023"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-024"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-025"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-026"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-027"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-028"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-029"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-030"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-031"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-032"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-033"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-034"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-035"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-036"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-037"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-038"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-039"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-040"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-041"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-042"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-regular-043"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-000"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-001"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-002"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-003"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-004"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-005"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-006"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-007"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-008"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-009"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-010"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-011"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-012"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-013"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-014"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -8.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-015"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-016"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-017"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-018"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-019"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-020"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 11.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-021"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-022"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-023"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-024"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-025"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-026"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-027"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-028"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-029"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-030"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-031"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": -8.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-032"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-033"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-034"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-035"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-036"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-037"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -8.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-038"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-039"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-040"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-041"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-042"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "heldout-asymmetric-043"
+  }
+]

@@ -4,6 +4,7 @@ import unittest
 
 import street as st
 import brain as br
+import evaluate_stage2 as ev2
 from simulation import MAX_STEERING
 
 
@@ -90,6 +91,46 @@ class TestStage2NeuralController(unittest.TestCase):
         control = controller(obs)
         self.assertGreater(control.steering, 0.0)
         self.assertTrue(-st.MAX_BRAKE <= control.acceleration <= st.MAX_ACCEL)
+
+
+class TestStage2Evaluation(unittest.TestCase):
+    def test_frozen_split_is_reproducible_and_disjoint(self):
+        a_train, a_test = ev2.generate_scenario_splits(seed=2)
+        b_train, b_test = ev2.generate_scenario_splits(seed=2)
+        self.assertEqual([ev2.scenario_to_dict(s) for s in a_train],
+                         [ev2.scenario_to_dict(s) for s in b_train])
+        self.assertEqual(len(a_train), 24)
+        self.assertEqual(len(a_test), 100)
+        self.assertTrue(set(s.label for s in a_train).isdisjoint(s.label for s in a_test))
+        key = lambda s: (s.layout, s.start.x, s.start.y, s.target_x, s.target_y)
+        self.assertTrue({key(s) for s in a_train}.isdisjoint(key(s) for s in a_test))
+        self.assertEqual([sum(s.layout == name for s in a_train)
+                          for name in ("cross", "regular", "asymmetric")], [8, 8, 8])
+        self.assertEqual([sum(s.layout == name for s in a_test)
+                          for name in ("cross", "regular", "asymmetric")], [12, 44, 44])
+
+    def test_summary_reports_every_outcome(self):
+        layout = st.make_grid_layout("test", (0.0,), (0.0,))
+        arrived = st.StreetScenario("test", st.StreetCarState(0, 0, 0, 0), 0, 0)
+        summary = ev2.evaluate_controller([arrived], {"test": layout},
+            lambda obs: st.Control(0.0, 0.0))
+        self.assertEqual(summary.as_dict(), {
+            "trials": 1, "arrivals": 1, "collisions": 0, "timeouts": 0,
+            "arrival_rate": 1.0, "mean_arrival_time": 0.0,
+            "mean_route_length": 0.0,
+        })
+
+    def test_calibration_exhausts_declared_twelve_candidates(self):
+        train, _ = ev2.generate_scenario_splits(seed=2)
+        made = []
+        def factory(avoidance_gain, brake_distance):
+            made.append((avoidance_gain, brake_distance))
+            return (lambda obs: st.Control(0.0, 0.0)), None
+        gain, distance, grid = ev2.calibrate_stage2_adapter(train[:1], factory)
+        self.assertEqual(len(grid), 12)
+        self.assertEqual(len(made), 12)
+        self.assertIn(gain, ev2.AVOIDANCE_GAINS)
+        self.assertIn(distance, ev2.BRAKE_DISTANCES)
 
 
 if __name__ == "__main__":

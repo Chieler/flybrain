@@ -1,0 +1,338 @@
+[
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-000"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-001"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 21.0,
+      "y": 0.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-002"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 0.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-003"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 21.0,
+      "y": 0.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-004"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-005"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-006"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": -21.0,
+      "y": 0.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-cross-007"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-000"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": 10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-001"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-002"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-003"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-004"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-005"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-006"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-regular-007"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-000"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -8.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-001"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-002"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-003"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-004"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-005"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-006"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "train-asymmetric-007"
+  }
+]
