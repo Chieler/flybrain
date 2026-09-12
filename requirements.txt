@@ -4,5 +4,5 @@ numpy==2.5.1
 scipy==1.18.0
 # Used by prepare_connectome.py (Phase 1, BLOCKED: dataset + mapping pending).
 pyarrow==25.0.1
-# Viewer only (Phase 5, not built yet). Uncomment and pin when adding viewer.py.
-# pygame
+# Viewer only (Phase 5): viewer.py replays recorded episodes.
+pygame==2.6.1

@@ -195,14 +195,67 @@ def _benchmark(seconds: float) -> None:
           f"(ratio {seconds / wall:.0f}x). Note: physics only, no neural graph.")
 
 
+def _neural_benchmark(data_dir: str, seconds: float) -> None:
+    """Phase 2 neural benchmark: graph counts + memory, per-step wall time, and
+    the 10 ms vs 5 ms neural-timestep comparison on the real graph.
+
+    Matvec cost is independent of neural_dt, so both timesteps share a per-step
+    cost; the realtime ratio differs only because a finer dt needs more steps
+    per simulated second. The dynamics comparison settles the same fixed cue at
+    each dt and reports how far the pooled outputs and steering diverge — a check
+    that the 10 ms default is not coarser than the model can tolerate.
+    """
+    import brain as br  # local import: keeps the physics module free of brain
+
+    b = br.Brain.load(data_dir)
+    W = b.W
+    mem_mb = (W.data.nbytes + W.indices.nbytes + W.indptr.nbytes) / 1e6
+    print(f"graph: {b.n} neurons, {W.nnz} edges, W {mem_mb:.1f} MB "
+          f"(+ activity {b.activity.nbytes / 1e6:.2f} MB)")
+
+    stim = b.encode(0.0, 0.8)  # fixed off-axis goal cue
+    for _ in range(5):
+        b.step(stim)           # warm caches before timing
+
+    # Per-step matvec cost (dt-independent).
+    n_steps = 200
+    b.reset()
+    start = time.perf_counter()
+    for _ in range(n_steps):
+        b.step(stim)
+    per_step = (time.perf_counter() - start) / n_steps
+    print(f"neural step: {per_step * 1e3:.2f} ms/step over the {W.nnz}-edge matvec")
+
+    # 10 ms vs 5 ms: same per-step cost, ratio scales with dt; dynamics compared.
+    out = {}
+    for dt in (0.010, 0.005):
+        b.params.neural_dt = dt
+        b.reset()
+        steps = int(seconds / dt)           # steps to cover `seconds` of sim time
+        for _ in range(steps):
+            b.step(stim)
+        left, right = b.outputs()
+        ratio = dt / per_step               # >1 faster than realtime
+        out[dt] = (left, right)
+        print(f"  dt={dt * 1e3:4.0f} ms: {steps} steps/{seconds:.0f}s, "
+              f"ratio {ratio:.2f}x realtime, pooled L/R = {left:.5f}/{right:.5f}, "
+              f"steer signal (L-R) = {left - right:+.6f}")
+    (l10, r10), (l5, r5) = out[0.010], out[0.005]
+    print(f"  10ms vs 5ms divergence: |dL|={abs(l10 - l5):.2e} "
+          f"|dR|={abs(r10 - r5):.2e} |d(L-R)|={abs((l10 - r10) - (l5 - r5)):.2e}")
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Stage 1 car simulation (headless).")
     p.add_argument("--benchmark", action="store_true",
                    help="Time the physics loop (no neural graph in this slice).")
     p.add_argument("--seconds", type=float, default=60.0)
-    p.add_argument("--data", help="Prepared connectome dir (unused in this slice).")
+    p.add_argument("--data", help="Prepared connectome dir; enables the neural benchmark.")
     args = p.parse_args()
     if args.benchmark:
-        _benchmark(args.seconds)
+        if args.data:
+            _neural_benchmark(args.data, args.seconds)
+        else:
+            _benchmark(args.seconds)
     else:
         p.print_help()
