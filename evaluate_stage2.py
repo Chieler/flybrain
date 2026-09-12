@@ -13,9 +13,17 @@ from street import (
     ARENA_BOUND, MAX_SIM_TIME, SENSOR_RANGE, Control, StreetCarState, StreetScenario,
     StreetEpisodeResult, StreetLayout, initial_layouts, run_street_episode,
 )
+from brain import Brain, Stage2Adapter, Stage2NeuralController
+from evaluate import load_checkpoint
+from simulation import MAX_STEERING, wrap_angle
 
 AVOIDANCE_GAINS = (0.0, 0.25, 0.5, 1.0)
 BRAKE_DISTANCES = (2.0, 4.0, 6.0)
+
+CONTROL_NAMES = (
+    "neural", "direct_compass", "sensor_only", "neural_no_sensors",
+    "goal_cue_withheld", "pfl3_silenced",
+)
 
 
 def _waypoints(layout: StreetLayout) -> list[tuple[float, float]]:
@@ -150,12 +158,151 @@ def calibrate_stage2_adapter(scenarios, make_controller,
     return best[1], best[2], grid
 
 
+def stage2_factory(brain: Brain, stage1_checkpoint: dict):
+    def make(avoidance_gain: float, brake_distance: float):
+        adapter = Stage2Adapter(stage1_checkpoint["gain"], stage1_checkpoint["bias"],
+                                avoidance_gain, brake_distance)
+        controller = Stage2NeuralController(brain, adapter)
+        return controller, controller.reset
+    return make
+
+
+def sensor_only_controller(adapter: Stage2Adapter):
+    local = Stage2Adapter(0.0, 0.0, adapter.avoidance_gain,
+                          adapter.brake_distance, adapter.cruise_speed)
+    return lambda obs: local(0.0, 0.0, obs.ranges, obs.speed)
+
+
+def direct_compass_controller(adapter: Stage2Adapter):
+    local = Stage2Adapter(1.0, 0.0, adapter.avoidance_gain,
+                          adapter.brake_distance, adapter.cruise_speed)
+    def controller(obs):
+        error = wrap_angle(obs.goal_bearing - obs.heading)
+        signal = max(-MAX_STEERING, min(MAX_STEERING, 4.0 * error))
+        return local(signal, 0.0, obs.ranges, obs.speed)
+    return controller
+
+
+def _controlled_neural(brain: Brain, adapter: Stage2Adapter,
+                       withhold_goal: bool = False, silence_pfl3: bool = False,
+                       ranges_override: tuple[float, ...] | None = None):
+    goal = brain.input_map.get("goal")
+    goal_indices = goal[0] if goal is not None else None
+    outputs = list(brain.output_map["left"]) + list(brain.output_map["right"])
+    def controller(obs):
+        stimulus = brain.encode(obs.heading, obs.goal_bearing)
+        if withhold_goal and goal_indices is not None:
+            stimulus[goal_indices] = 0.0
+        for _ in range(2):
+            brain.step(stimulus)
+            if silence_pfl3:
+                brain.activity[outputs] = 0.0
+        left, right = brain.outputs()
+        ranges = obs.ranges if ranges_override is None else ranges_override
+        return adapter(left, right, ranges, obs.speed)
+    return controller, brain.reset
+
+
+def run_stage2_controls(data_dir: str, stage1_checkpoint: dict,
+                        stage2_checkpoint: dict,
+                        heldout: list[StreetScenario]) -> dict:
+    layouts = initial_layouts()
+    brain = Brain.load(data_dir, stage1_checkpoint["params"])
+    adapter = Stage2Adapter(stage1_checkpoint["gain"], stage1_checkpoint["bias"],
+                            stage2_checkpoint["avoidance_gain"],
+                            stage2_checkpoint["brake_distance"])
+    full = Stage2NeuralController(brain, adapter)
+    controllers = {
+        "neural": (full, full.reset),
+        "direct_compass": (direct_compass_controller(adapter), None),
+        "sensor_only": (sensor_only_controller(adapter), None),
+        "neural_no_sensors": _controlled_neural(
+            brain, adapter, ranges_override=(SENSOR_RANGE,) * 5),
+        "goal_cue_withheld": _controlled_neural(brain, adapter, withhold_goal=True),
+        "pfl3_silenced": _controlled_neural(brain, adapter, silence_pfl3=True),
+    }
+    results = {}
+    for name, (controller, reset) in controllers.items():
+        results[name] = evaluate_breakdown(heldout, layouts, controller, reset)
+        print(f"  control {name}: {results[name]['overall']}")
+    return results
+
+
+def sha256(path: str) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def save_stage2_checkpoint(path: str, stage1_path: str, training_path: str,
+                           heldout_path: str, gain: float, distance: float,
+                           grid: list[dict]) -> None:
+    payload = {
+        "stage1_checkpoint": stage1_path,
+        "stage1_checkpoint_sha256": sha256(stage1_path),
+        "training_scenarios": training_path,
+        "training_scenarios_sha256": sha256(training_path),
+        "heldout_scenarios": heldout_path,
+        "heldout_scenarios_sha256": sha256(heldout_path),
+        "learned_parameters": ["avoidance_gain", "brake_distance"],
+        "avoidance_gain": gain,
+        "brake_distance": distance,
+        "selection": "max arrivals, min collisions, min timeouts, min successful route length, min gain, min distance",
+        "candidates": grid,
+    }
+    Path(path).write_text(json.dumps(payload, indent=2) + "\n")
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Stage 2 street evaluation.")
     parser.add_argument("--freeze-scenarios", action="store_true",
                         help="Write the frozen training/held-out scenario splits.")
     parser.add_argument("--seed", type=int, default=2)
+    parser.add_argument("--calibrate", action="store_true",
+                        help="Calibrate the Stage 2 adapter on the real graph.")
+    parser.add_argument("--controls", action="store_true",
+                        help="Run the six-way held-out control evaluation.")
+    parser.add_argument("--data", default="data/malecns-v1.0")
+    parser.add_argument("--stage1-checkpoint", default="runs/stage1/checkpoint.json")
+    parser.add_argument("--training", default="runs/stage2/training.json")
+    parser.add_argument("--heldout", default="runs/stage2/heldout.json")
+    parser.add_argument("--checkpoint", default="runs/stage2/checkpoint.json")
+    parser.add_argument("--out", default="runs/stage2/results.json")
     return parser
+
+
+def _do_calibrate(args) -> None:
+    stage1 = load_checkpoint(args.stage1_checkpoint)
+    training = load_scenarios(args.training)
+    brain = Brain.load(args.data, stage1["params"])
+    factory = stage2_factory(brain, stage1)
+    counter = {"n": 0}
+    def make(gain, distance):
+        counter["n"] += 1
+        print(f"  candidate {counter['n']}/12: avoidance_gain={gain} brake_distance={distance}")
+        return factory(gain, distance)
+    gain, distance, grid = calibrate_stage2_adapter(training, make)
+    Path(args.checkpoint).parent.mkdir(parents=True, exist_ok=True)
+    save_stage2_checkpoint(args.checkpoint, args.stage1_checkpoint, args.training,
+                           args.heldout, gain, distance, grid)
+    print(f"Selected avoidance_gain={gain} brake_distance={distance}; wrote {args.checkpoint}")
+
+
+def _do_controls(args) -> None:
+    checkpoint = json.loads(Path(args.checkpoint).read_text())
+    expected = {
+        args.stage1_checkpoint: checkpoint["stage1_checkpoint_sha256"],
+        args.training: checkpoint["training_scenarios_sha256"],
+        args.heldout: checkpoint["heldout_scenarios_sha256"],
+    }
+    for path, recorded in expected.items():
+        actual = sha256(path)
+        if actual != recorded:
+            raise SystemExit(f"SHA-256 mismatch for {path}: {actual} != {recorded}")
+    stage1 = load_checkpoint(args.stage1_checkpoint)
+    heldout = load_scenarios(args.heldout)
+    results = run_stage2_controls(args.data, stage1, checkpoint, heldout)
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.out).write_text(json.dumps(results, indent=2) + "\n")
+    print(f"Wrote {args.out}")
 
 
 def main(argv=None) -> None:
@@ -166,6 +313,10 @@ def main(argv=None) -> None:
         save_scenarios("runs/stage2/training.json", train)
         save_scenarios("runs/stage2/heldout.json", heldout)
         print(f"Froze {len(train)} training and {len(heldout)} held-out scenarios.")
+    if args.calibrate:
+        _do_calibrate(args)
+    if args.controls:
+        _do_controls(args)
 
 
 if __name__ == "__main__":

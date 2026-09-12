@@ -133,5 +133,48 @@ class TestStage2Evaluation(unittest.TestCase):
         self.assertIn(distance, ev2.BRAKE_DISTANCES)
 
 
+class TestStage2Controls(unittest.TestCase):
+    def test_factory_changes_only_declared_stage2_parameters(self):
+        brain = __import__("test_stage1")._angle_tuned_brain()
+        source = {"gain": 32.0, "bias": -0.05}
+        controller, _ = ev2.stage2_factory(brain, source)(0.5, 4.0)
+        self.assertEqual(controller.adapter.brain_gain, 32.0)
+        self.assertEqual(controller.adapter.bias, -0.05)
+        self.assertEqual(controller.adapter.avoidance_gain, 0.5)
+        self.assertEqual(controller.adapter.brake_distance, 4.0)
+
+    def test_sensor_only_ignores_neural_rates(self):
+        adapter = br.Stage2Adapter(32.0, -0.05, 0.5, 4.0)
+        control = ev2.sensor_only_controller(adapter)(
+            st.StreetObservation(2.0, -2.0, 1.0, (8.0,) * 5))
+        expected = br.Stage2Adapter(0.0, 0.0, 0.5, 4.0)(
+            0.0, 0.0, (8.0,) * 5, 1.0)
+        self.assertEqual(control, expected)
+
+    def test_results_have_separate_adapter_and_neural_controls(self):
+        expected = {"neural", "direct_compass", "sensor_only",
+                    "neural_no_sensors", "goal_cue_withheld", "pfl3_silenced"}
+        self.assertEqual(set(ev2.CONTROL_NAMES), expected)
+
+    def test_checkpoint_records_exact_sources_and_learned_parameters(self):
+        import json
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as directory:
+            paths = [Path(directory) / name
+                     for name in ("stage1.json", "training.json", "heldout.json")]
+            for path in paths:
+                path.write_text("{}")
+            output = Path(directory) / "checkpoint.json"
+            ev2.save_stage2_checkpoint(str(output), *(str(path) for path in paths),
+                                       0.5, 4.0, [])
+            checkpoint = json.loads(output.read_text())
+            self.assertEqual(checkpoint["learned_parameters"],
+                             ["avoidance_gain", "brake_distance"])
+            self.assertEqual(checkpoint["stage1_checkpoint_sha256"], ev2.sha256(str(paths[0])))
+            self.assertEqual(checkpoint["training_scenarios_sha256"], ev2.sha256(str(paths[1])))
+            self.assertEqual(checkpoint["heldout_scenarios_sha256"], ev2.sha256(str(paths[2])))
+
+
 if __name__ == "__main__":
     unittest.main()
