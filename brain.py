@@ -148,3 +148,44 @@ class NeuralController:
             self.brain.step(stim)
         left, right = self.brain.outputs()
         return self.adapter(left, right)
+
+
+@dataclass
+class Stage2Adapter:
+    brain_gain: float
+    bias: float
+    avoidance_gain: float
+    brake_distance: float
+    cruise_speed: float = 2.0
+    max_steering: float = math.radians(30.0)
+
+    def __call__(self, left: float, right: float, ranges: tuple[float, ...],
+                 speed: float):
+        from street import Control, MAX_ACCEL, MAX_BRAKE, SENSOR_RANGE
+        normalized = tuple(r / SENSOR_RANGE for r in ranges)
+        left_open = sum(normalized[:2]) / 2
+        right_open = sum(normalized[-2:]) / 2
+        steering = self.brain_gain * (left - right) + self.bias
+        steering += self.avoidance_gain * (left_open - right_open)
+        steering = max(-self.max_steering, min(self.max_steering, steering))
+        desired = self.cruise_speed * min(1.0, ranges[2] / self.brake_distance)
+        desired *= max(0.35, 1.0 - abs(steering) / self.max_steering)
+        acceleration = max(-MAX_BRAKE, min(MAX_ACCEL, 2.0 * (desired - speed)))
+        return Control(steering, acceleration)
+
+
+class Stage2NeuralController:
+    def __init__(self, brain: Brain, adapter: Stage2Adapter, neural_updates: int = 2):
+        self.brain = brain
+        self.adapter = adapter
+        self.neural_updates = neural_updates
+
+    def reset(self) -> None:
+        self.brain.reset()
+
+    def __call__(self, obs):
+        stimulus = self.brain.encode(obs.heading, obs.goal_bearing)
+        for _ in range(self.neural_updates):
+            self.brain.step(stimulus)
+        left, right = self.brain.outputs()
+        return self.adapter(left, right, obs.ranges, obs.speed)
