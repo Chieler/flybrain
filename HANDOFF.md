@@ -117,6 +117,56 @@ These come from the plan. Violating them invalidates the result.
   `python viewer.py --controller neural --data <dir> --checkpoint checkpoint.json`.
   Transform + record path smoke-checked headless (SDL_VIDEODRIVER=dummy).
 
+## Stage 2 — street grid
+
+Plan: `docs/superpowers/plans/2026-09-12-stage-2-street-grid.md`. Separate
+runtime; Stage 1 contracts unchanged.
+
+**Files**
+
+| File | Stage 2 role |
+|------|------|
+| `street.py` | Fixed grid construction, building collision geometry, five local range sensors, variable-speed bicycle dynamics, swept-collision episode loop. Owns all Stage 2 geometry. |
+| `brain.py` | `Stage2Adapter` (PFL3 rates + ranges + speed → `Control`) and `Stage2NeuralController`. No street geometry at import (local import inside `__call__`). |
+| `evaluate_stage2.py` | Frozen seeded splits, calibration grid, exact summaries, six controls, checkpoint provenance, `--freeze-scenarios/--calibrate/--controls`. |
+| `test_stage2.py` | Deterministic Stage 2 behavior + integrity-boundary checks. |
+| `viewer.py` | `--stage 2` draws buildings/road and replays a recorded 4-tuple trajectory. |
+| `runs/stage2/` | `training.json` (24), `heldout.json` (100) committed; `checkpoint.json` + `results.json` produced by the real-graph run. |
+
+**Observation / control boundary.** The controller receives heading, destination
+bearing, current speed, and five local range readings — never a layout, building
+rectangle, target coordinate, route, or waypoint. `Stage2Adapter.__call__(self,
+left, right, ranges, speed)` carries no geometry argument (asserted in
+`test_stage2`).
+
+**Sensors & collision.** Five rays at relative angles `(+90°, +45°, 0°, −45°,
+−90°)`, distance to nearest building or arena edge, clipped to
+`SENSOR_RANGE = 8.0` and normalized to `[0,1]` before the adapter. Collision uses
+a conservative square footprint of half-width `CAR_RADIUS`: the car center is
+swept against rectangles expanded by that radius — exact for this declared
+footprint and tunnel-proof.
+
+**Calibrated parameters.** Only `avoidance_gain ∈ {0.0, 0.25, 0.5, 1.0}` and
+`brake_distance ∈ {2.0, 4.0, 6.0}` — 12 candidates over 24 frozen training
+scenarios. Stage 1 neural dynamics and the PFL3 adapter `gain`/`bias` stay frozen
+from `runs/stage1/checkpoint.json`. The Stage 2 checkpoint hashes (SHA-256) the
+Stage 1 checkpoint and both frozen scenario files; `--controls` refuses a hash
+mismatch.
+
+**Controls (all reuse the selected adapter, no recalibration):** `neural`,
+`direct_compass` (labeled non-neural baseline, reads angular error),
+`sensor_only`, `neural_no_sensors` (ranges forced to max), `goal_cue_withheld`,
+`pfl3_silenced`.
+
+**Results & exit condition — PENDING.** One full-graph episode ≈ 47 s;
+calibration (288) + controls (600) ≈ 11–12 h, run separately. Until
+`runs/stage2/checkpoint.json` and `runs/stage2/results.json` are committed:
+**Stage 2 exit condition: NOT MET** (held-out real-graph evidence not yet
+produced). Fill the selected `avoidance_gain`/`brake_distance`, the six-control
+arrival/collision/timeout counts with denominators, successful arrival
+time/length, wall time, and peak memory here once the run lands. Do not claim
+MET without reliable behavior across all three layouts.
+
 ## Git
 
 - `master`: Phases 1–2 slice merged.

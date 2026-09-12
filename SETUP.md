@@ -79,3 +79,32 @@ matvec — roughly **14.6 ms/step, ~0.68× realtime** on the dev machine. A full
 calibration grid (8 gains × 3 biases × 32 scenarios ≈ 768 episodes) is ~9 h at
 this speed. This is a known wall, documented in HANDOFF.md; do not shrink the
 graph to hit a time budget without a recorded decision (plan constraint).
+
+## 6. Stage 2 — street grid (same data, same frozen Stage 1 checkpoint)
+
+Deterministic checks need no download:
+
+```bash
+python3 -m unittest test_stage2 -q
+```
+
+Real-graph calibration then six-way held-out controls (reuses the frozen Stage 1
+checkpoint; only `avoidance_gain` and `brake_distance` are tuned):
+
+```bash
+python3 evaluate_stage2.py --calibrate \
+  --data data/malecns-v1.0 --stage1-checkpoint runs/stage1/checkpoint.json \
+  --training runs/stage2/training.json --heldout runs/stage2/heldout.json \
+  --checkpoint runs/stage2/checkpoint.json
+
+python3 evaluate_stage2.py --controls \
+  --data data/malecns-v1.0 --stage1-checkpoint runs/stage1/checkpoint.json \
+  --checkpoint runs/stage2/checkpoint.json --heldout runs/stage2/heldout.json \
+  --out runs/stage2/results.json
+```
+
+One full-graph Stage 2 episode ≈ **47 s**; calibration is 288 episodes and
+controls is 600 episodes, so budget ~11–12 h. `--controls` verifies the recorded
+SHA-256 of the Stage 1 checkpoint and both frozen scenario files, and refuses a
+mismatch with a nonzero exit. Replay a frozen scenario with
+`python3 viewer.py --stage 2 --controller baseline --scenarios runs/stage2/heldout.json --index 0`.
