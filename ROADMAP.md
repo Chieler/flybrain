@@ -1,6 +1,7 @@
 # Flybrain: a fly brain learns to drive
 
-**Status:** Design and planning only. No simulator has been implemented.
+**Status:** Stage 1 open-arena implementation exists; neural evaluation is in
+progress, and its acceptance target has not yet been met.
 
 ## Goal
 

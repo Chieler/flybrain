@@ -14,13 +14,12 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Installs `numpy`, `scipy`, `pyarrow`. `pygame` (viewer, Phase 5) is commented
-out — uncomment only when building `viewer.py`.
+Installs `numpy`, `scipy`, `pyarrow`, and `pygame` for the Phase 5 viewer.
 
 ## 2. Verify the code slice (no data needed)
 
 ```bash
-python3 -m unittest test_stage1 -q     # 16 tests, must be OK
+python3 -m unittest test_stage1 -q     # deterministic checks, must be OK
 python3 simulation.py --benchmark      # physics-only loop timing
 ```
 

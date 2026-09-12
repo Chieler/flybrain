@@ -94,10 +94,9 @@ These come from the plan. Violating them invalidates the result.
 
 ## Remaining work
 
-- **Phase 3 finish (run-only):** calibration grid running in cloud →
-  `checkpoint.json` (`{gain, bias, params, data_dir}`, written by
-  `evaluate.py --calibrate`). Then produce untrained vs. calibrated example
-  trajectories. Symmetry / geometry-shortcut checks: **done** (above).
+- **Phase 3:** calibration completed (gain 32, bias -0.05; 7 arrivals on 32
+  frozen calibration scenarios); checkpoint and example trajectories are under
+  `runs/stage1/`.
 - **Phase 2 leftovers: DONE.** `simulation.py --benchmark --seconds 60 --data <dir>`
   runs the neural benchmark on the real graph. Measured (MaleCNS v1.0):
   191,148 neurons, 19,924,788 edges, W 240.6 MB (+0.76 MB activity);
@@ -110,7 +109,7 @@ These come from the plan. Violating them invalidates the result.
   --scenarios heldout.json`. Harness (neural + baseline + zero/random +
   cue-withheld + pathway-silenced + shuffled×3-recalibrated) is written and
   unit-tested; only execution against the real graph remains.
-- **Phase 5: DONE.** `viewer.py` (pygame 2.6.1, pinned in requirements.txt)
+- **Phase 5 (partial):** `viewer.py` (pygame 2.6.1, pinned in requirements.txt)
   replays a recorded episode in a window; rendering is decoupled from neural
   compute (`run_episode(record=True)` first, then animate). Screen y-flip lives
   only in the viewer. Runs with no download via the labeled baseline:
