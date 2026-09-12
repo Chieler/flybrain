@@ -36,7 +36,8 @@ These come from the plan. Violating them invalidates the result.
 | `brain.py` | `RateParams`, `Brain` (sparse rate model, `.load()`, `.encode()`, `.step()`, `.outputs()`), `Adapter`, `NeuralController`. |
 | `prepare_connectome.py` | Feather → CSR pipeline. Transmitter signs, retained-neuron set, anatomy-derived preferred angles, manifest. |
 | `evaluate.py` | Rewards, scenario generation, `conventional_baseline`, `evaluate_controller`. |
-| `test_stage1.py` | 16 deterministic tests. |
+| `test_stage1.py` | 26 deterministic tests. |
+| `viewer.py` | Phase 5 pygame replay of a recorded episode (baseline or neural). |
 | `README.md` / `ROADMAP.md` | Scope, honesty boundary, phase map. |
 | `data/` | gitignored — see SETUP.md to reproduce. |
 
@@ -86,8 +87,8 @@ These come from the plan. Violating them invalidates the result.
 
 **Blocked / open**
 
-- **Compute wall.** Neural step ~14.6 ms, ~0.68× realtime, memory-bandwidth
-  bound on the 22M-edge matvec. Full calibration grid ≈ 9 h; Phase 4 controls
+- **Compute wall.** Neural step ~13.4 ms, ~0.75× realtime, memory-bandwidth
+  bound on the ~20M-edge matvec. Full calibration grid ≈ 9 h; Phase 4 controls
   ≈ tens of hours. Needs a decision (optimize matvec / reduced labeled first
   pass / long background run) — NOT silent graph reduction.
 
@@ -97,14 +98,25 @@ These come from the plan. Violating them invalidates the result.
   `checkpoint.json` (`{gain, bias, params, data_dir}`, written by
   `evaluate.py --calibrate`). Then produce untrained vs. calibrated example
   trajectories. Symmetry / geometry-shortcut checks: **done** (above).
-- **Phase 2 leftovers:** 10 ms vs 5 ms neural timestep comparison; formal 60 s
-  benchmark with graph counts + memory.
+- **Phase 2 leftovers: DONE.** `simulation.py --benchmark --seconds 60 --data <dir>`
+  runs the neural benchmark on the real graph. Measured (MaleCNS v1.0):
+  191,148 neurons, 19,924,788 edges, W 240.6 MB (+0.76 MB activity);
+  13.4 ms/neural step. At 10 ms timestep 0.75× realtime, at 5 ms 0.37×.
+  10 ms vs 5 ms steady-state divergence ~1.5e-8 (float32 noise), steering
+  identical — **10 ms default confirmed adequate**, 5 ms doubles cost for no
+  accuracy gain.
 - **Phase 4 (run-only):** once the checkpoint lands, run
   `evaluate.py --controls --data <dir> --checkpoint checkpoint.json
   --scenarios heldout.json`. Harness (neural + baseline + zero/random +
   cue-withheld + pathway-silenced + shuffled×3-recalibrated) is written and
   unit-tested; only execution against the real graph remains.
-- **Phase 5:** `viewer.py` (pygame; add + pin the dep when building it).
+- **Phase 5: DONE.** `viewer.py` (pygame 2.6.1, pinned in requirements.txt)
+  replays a recorded episode in a window; rendering is decoupled from neural
+  compute (`run_episode(record=True)` first, then animate). Screen y-flip lives
+  only in the viewer. Runs with no download via the labeled baseline:
+  `python viewer.py` (generates a scenario). Neural replay:
+  `python viewer.py --controller neural --data <dir> --checkpoint checkpoint.json`.
+  Transform + record path smoke-checked headless (SDL_VIDEODRIVER=dummy).
 
 ## Git
 
