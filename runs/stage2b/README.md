@@ -95,8 +95,9 @@ route/history memory as the next hypothesis**.
 **Next gate (before any dopamine/connectome learning).** Run a same-observation
 **recurrent / history** baseline — same `heading, goal_bearing, speed, ranges`,
 still no map and no pose, but with learned temporal state — against this frozen
-gate split. That directly tests whether route memory explains the 62% gap: if the
-recurrent baseline clears 90%/80%, memory (not the interface) is the missing
-piece; if it does not, the interface itself is implicated. Only after that
-consider biologically grounded learning, with dopamine as a teaching/modulatory
-signal — **never** as goal bearing.
+gate split. Clearing 90%/80% would be evidence that this observation history is
+sufficient and memory was the missing piece for this controller family. A
+failure is inconclusive between model capacity, training, and observation
+limits; diagnose it before proceeding. Only then consider biologically grounded
+learning, with dopamine as a teaching/modulatory signal — **never** as goal
+bearing.

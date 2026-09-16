@@ -543,14 +543,15 @@ layout/route/target/pose, the 100%-vs-62% gap does **not** by itself localize th
 deficit to memory (the two differ in map, route, and pose too); it establishes
 solvability and motivates route/history memory as the next hypothesis.
 
-**Next gate (before any dopamine/connectome learning).** A same-observation
-**recurrent / history** baseline — same `heading, goal_bearing, ranges, speed`,
-still no map and no pose, but with learned temporal state — evaluated against the
-frozen `gate_split.json`. This directly tests whether route memory explains the
-62% gap: clears 90%/80% → memory (not the interface) is the missing piece;
-fails → the interface itself is implicated. Only then biologically grounded
-learning, dopamine as a teaching/modulatory signal, **never** as goal bearing.
-Do not bolt a map/planner onto the SM — that just re-derives the waypoint witness.
+**Next gate (before any dopamine/connectome learning).** Use a same-observation
+**recurrent / history** baseline — the same `heading`, `goal_bearing`, `ranges`,
+and `speed`, still with no map or pose — against frozen `gate_split.json`.
+Clearing 90%/80% would be evidence that this observation history is sufficient
+and memory was the missing piece for this controller family. A failure is
+inconclusive between model capacity, training, and observation limits; diagnose
+it before proceeding. Only then consider biologically grounded learning, with
+dopamine as a teaching/modulatory signal, **never** as goal bearing. Do not bolt
+a map/planner onto the SM — that just re-derives the waypoint witness.
 
 ## Git
 
