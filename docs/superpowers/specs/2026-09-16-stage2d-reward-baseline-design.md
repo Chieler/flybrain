@@ -37,80 +37,98 @@ observation limits — it does not implicate the interface on its own.
 
 ### Trainable parameters
 Only the linear readout `W_out` (shape `2 × (1 + N_FEATURES + n)`). The reservoir
-(`W_in`, `W`, leak, seed) is fixed, exactly as in 2c. Parameter count is small:
-`P = 2·(1 + 10 + n)` → 86 for n=32, 130 for n=64.
+(`W_in`, `W`, leak, seed) is **fixed to the Stage 2c winner**: `n_reservoir=64`,
+`spectral_radius=0.8`, `leak=0.5`, `input_scale=1.0`, `esn_seed=0`. So
+`P = 2·(1 + 10 + 64) = 150` trainable parameters.
+
+**No reservoir/config grid.** Running a config sweep would change more than the
+training signal and break the one-variable design; the reservoir config is frozen
+to 2c's winner and only `W_out` is optimized. There is therefore **no** train/val
+selection step in Stage 2d.
 
 Warm start is `μ = 0` (no ridge/imitation initialization), so this is a clean
 reward-only test — no imitation leaks in through the starting point.
 
-### Reward (privileged geometry, teaching signal only — never an input)
-Per episode, from `StreetEpisodeResult` + the scenario's target:
+### Reward — bounded net progress (privileged geometry, evaluator-only)
+Per episode, from `StreetEpisodeResult` + the scenario's target. Uses **net**
+progress from start to *final* position (not accumulated positive progress, and
+not closest approach), so wandering near the goal and leaving cannot be farmed:
 
 ```
-d0       = dist(start, target)
-d_min    = min over trajectory positions of dist(pos, target)   # closest approach
-progress = clip((d0 - d_min) / max(d0, eps), 0, 1)              # in [0, 1]
+d0        = dist(start, target)
+d_final   = dist(final position, target)
+progress  = clip((d0 - d_final) / d0, -1.0, 1.0)     # bounded net progress
 R = W_arrive·[arrival] + W_progress·progress
       - W_collide·[collision] - W_time·(elapsed / MAX_SIM_TIME)
 ```
 
-Fixed weights (design choices, documented, **not** tuned on the gate):
-`W_arrive=1.0, W_progress=1.0, W_collide=0.5, W_time=0.1`. Privileged distances
-enter the *reward*, never the controller's inputs — this is the legitimate
-dopamine-style teaching role.
+Coefficients frozen before any training (documented, **not** tuned on the gate):
+`W_arrive=2.0, W_progress=1.0, W_collide=1.0, W_time=0.2`. This makes the arrival
+bonus (2.0) **dominate the maximum possible shaping contribution** (progress
+maxes at 1.0). Sanity property, asserted in a test: standing still (progress 0,
+timeout ⇒ R = −0.2) must score **below** meaningful forward progress without a
+collision (e.g. progress 0.5, timeout ⇒ R = 0.3). Privileged distances enter the
+*reward only*, never the controller's inputs — the legitimate teaching role.
 
 ### Optimizer: Cross-Entropy Method (pure NumPy, deterministic)
-Black-box optimization over `θ = flatten(W_out)` — the closed-loop rollout is not
-differentiable, and CEM is ~30 lines with no framework:
+Black-box optimization over `θ = flatten(W_out)` (150 dims) — the closed-loop
+rollout is not differentiable, and CEM is ~30 lines with no framework:
 
 1. Init `μ = 0`, per-dim `σ = init_std`. Seed the CEM rng.
 2. Each iteration: sample `pop` candidates `θ_i ~ N(μ, diag(σ²))`; fitness(θ_i) =
-   mean reward over the fit scenarios (deterministic — sim + controller are
-   deterministic); keep the top `elite_frac`; refit `μ, σ` to the elites (with a
-   small `σ` floor to avoid collapse). Repeat for `n_iter`.
-3. Return `μ` as the trained readout.
+   mean reward over the fixed fitness scenarios (deterministic — sim + controller
+   are deterministic); keep the top `elite_frac`; refit `μ, σ` (diagonal
+   covariance) to the elites (with a small `σ` floor to avoid collapse). Repeat
+   for `n_iter`. Return `μ` as the trained readout.
 
-Determinism: fixed reservoir seed + fixed CEM seed ⇒ reproducible.
+**Frozen budget** (predeclared; identical for recurrent and ablation):
+`population=64`, `n_iter=25`, `elite_frac=0.20`, diagonal covariance, over
+**40 fixed, stratified fitness scenarios** drawn from the Stage 2d train split
+(stratified across layouts, e.g. `cross=4, regular=18, asymmetric=18`). That is
+`64 × 25 × 40 = 64,000` rollouts per model, **128,000 total** across recurrent +
+ablation. Determinism: fixed reservoir seed + fixed CEM seed ⇒ reproducible.
+
+**Timing-only smoke test first.** Before the real run, time a small slice
+(e.g. one CEM iteration, or N rollouts) to estimate wall-clock. The budget is
+frozen *before* optimization and reduced **only** on the basis of that timing —
+never on training results, and never by looking at the gate.
 
 ## Fresh, disjoint gate (the 2c review requirement)
 
 The Stage 2c gate is spent and informed this design, so it cannot confirm 2d.
-Build two new splits with the existing, tested `evaluate_stage2.generate_dev_split`
-(100 scenarios, 12/44/44, excludes a given set by scenario key, prefers
-route-fresh candidates):
+Build two new splits with `evaluate_stage2b.generate_stage2b_split` (not
+`generate_dev_split`) so **outward-facing road-end starts stay excluded**, the
+same eligibility rule Stage 2b used. Exclude **every prior Stage 2 / 2b split**:
+`runs/stage2/dev_split.json` + `runs/stage2b/gate_split.json` +
+`runs/stage2b/sm_train_split.json`.
 
-1. `stage2d/gate_split`  = `generate_dev_split(seed=D1, exclude = stage2b_train + stage2b_gate)`
-2. `stage2d/train_split` = `generate_dev_split(seed=D2, exclude = stage2b_train + stage2b_gate + stage2d_gate)`
+Only **23** unused eligible `cross` scenarios remain after those exclusions, so
+the counts are **predeclared** (gate first, then train excludes the gate):
+
+1. `stage2d/gate_split`  = `generate_stage2b_split(seed=D1, exclude=prior, counts={cross:12, regular:44, asymmetric:44})`
+2. `stage2d/train_split` = `generate_stage2b_split(seed=D2, exclude=prior + gate, counts={cross:8, regular:44, asymmetric:44})`
+
+`cross` usage is `12 + 8 = 20`, leaving **3 as buffer** (20 ≤ 23), so generation
+cannot exhaust. **Route reuse is acceptable and documented**; only **exact
+scenario identity** must be disjoint. There is **no adaptive "new-heading reuse"
+fallback** — the predeclared counts guarantee feasibility outright.
 
 Then **assert** (fail loudly otherwise) that the Stage 2d gate shares no
-`_scenario_key` with stage2b train, stage2b gate, or the Stage 2d train split.
-Freeze both to `runs/stage2d/` and record sha256 of all four splits + the
-`gate_results.json`, the same provenance discipline as 2b/2c.
+`_scenario_key` with any prior split or with the Stage 2d train split. Freeze
+both to `runs/stage2d/` and record sha256 of the two new splits, every excluded
+prior split, and `gate_results.json` — the same provenance discipline as 2b/2c.
 
-**Risk — route-pool exhaustion (`cross`).** The single-intersection `cross`
-layout has a small route pool; `generate_dev_split` raises if it can't fill
-12 fresh `cross` scenarios after exclusions. Mitigation, in order: (a) rely on
-its existing new-heading reuse (still disjoint by scenario key); (b) if it still
-raises, reduce the Stage 2d **train** cross count (keep the gate at 12/44/44 for
-comparability). Whichever path is taken is recorded in the run README.
+## Selection discipline: none — fixed config, one-shot gate
 
-## Selection discipline (train-only; gate untouched until the one-shot)
+Because the reservoir config is frozen to the 2c winner (one-variable design),
+there is **no** hyperparameter/config selection and **no** train/val split. The
+procedure is:
 
-Identical shape to 2c:
-- Split `stage2d/train_split` into fit/val within-file (`VAL_SEED`, 70/30).
-- Small config grid — reservoir `{n_reservoir, spectral_radius, leak}` × a couple
-  of CEM budgets. Train each with CEM on the fit sub-split; **select** by
-  closed-loop arrival on the val sub-split.
-- Refit the selected config with CEM on the **full** `stage2d/train_split`.
-- Evaluate the frozen `stage2d/gate_split` **once**, for recurrent **and**
-  ablation. Never re-tune against it.
-
-**Runtime is the main cost.** CEM fitness = `pop × n_iter × |fit scenarios|`
-deterministic rollouts, each up to `MAX_SIM_TIME/PHYSICS_DT` steps. Keep the
-budget modest and documented (starting point: `pop≈32`, `n_iter≈20`, fit subset
-≈40 scenarios, small config grid), with CEM early-stop on a val plateau. If a
-full run is too slow, shrink the grid/budget — recorded in the README — never by
-peeking at the gate.
+- Train `W_out` by CEM on the **40 fixed stratified fitness scenarios** (frozen
+  budget above), once for recurrent and once for the ablation, identical seeds.
+- Evaluate the frozen `stage2d/gate_split` **once** for each. Never re-tune
+  against it; the only permitted pre-run adjustment is a budget reduction driven
+  solely by the timing smoke test.
 
 ## Interpretation (bounded, baked into the output)
 
@@ -128,14 +146,17 @@ peeking at the gate.
 ## Files
 
 - `stage2d.py` — `episode_reward(...)`, `CEM` optimizer, `train_readout_by_reward(
-  esn, scenarios, layouts, cem_cfg)`; reuses `stage2c.{observation_features,
-  EchoStateNetwork, RecurrentController}`.
-- `test_stage2d.py` (TDD) — reward monotonic in progress/arrival & penalized for
-  collision; CEM improves a toy quadratic; controller is observation-only
-  (`(self, obs)`); determinism (fixed seeds reproduce); split disjointness assert.
-- `evaluate_stage2d.py` — build/freeze disjoint splits, select on train/val,
-  refit, one-shot gate (recurrent + ablation), provenance sha256, write
-  `runs/stage2d/{results,gate_results}.json`.
+  esn, fitness_scenarios, layouts, cem_cfg)`; reuses `stage2c.{observation_features,
+  EchoStateNetwork, RecurrentController}` unchanged.
+- `test_stage2d.py` (TDD) — reward monotonic in net progress & arrival and
+  penalized for collision; **standing-still < meaningful forward progress**;
+  arrival bonus > max shaping; CEM improves a toy quadratic; controller is
+  observation-only (`(self, obs)`); determinism (fixed seeds reproduce); split
+  exact-identity disjointness assert.
+- `evaluate_stage2d.py` — build/freeze the two disjoint splits (fixed reservoir
+  config, no selection), timing smoke test, train `W_out` by CEM on the 40 fixed
+  fitness scenarios, one-shot gate (recurrent + ablation, identical budget/seeds),
+  provenance sha256, write `runs/stage2d/{results,gate_results}.json`.
 - `runs/stage2d/{train_split,gate_split,results,gate_results}.json` + `README.md`.
 
 Does **not** touch the connectome or the frozen Stage 2 / 2b / 2c artifacts.
