@@ -1,0 +1,191 @@
+{
+  "dev_split": "runs/stage2b/gate_split.json",
+  "dev_split_sha256": "3f7863a68261f5ee031054b528d3a56937ae663a06bcfcb73e49c28ccf907e8f",
+  "gate": {
+    "overall_rate": 0.9,
+    "per_layout_rate": 0.8
+  },
+  "results": {
+    "waypoint": {
+      "passes_gate": true,
+      "overall_arrival_rate": 1.0,
+      "by_layout_arrival_rate": {
+        "cross": 1.0,
+        "regular": 1.0,
+        "asymmetric": 1.0
+      },
+      "full_split": {
+        "overall": {
+          "trials": 100,
+          "arrivals": 100,
+          "collisions": 0,
+          "timeouts": 0,
+          "arrival_rate": 1.0,
+          "mean_arrival_time": 22.354786228617986,
+          "mean_route_length": 36.51225221657393
+        },
+        "by_layout": {
+          "cross": {
+            "trials": 12,
+            "arrivals": 12,
+            "collisions": 0,
+            "timeouts": 0,
+            "arrival_rate": 1.0,
+            "mean_arrival_time": 18.092317827555014,
+            "mean_route_length": 30.837959778692007
+          },
+          "regular": {
+            "trials": 44,
+            "arrivals": 44,
+            "collisions": 0,
+            "timeouts": 0,
+            "arrival_rate": 1.0,
+            "mean_arrival_time": 23.122665321727286,
+            "mean_route_length": 37.41176468889714
+          },
+          "asymmetric": {
+            "trials": 44,
+            "arrivals": 44,
+            "collisions": 0,
+            "timeouts": 0,
+            "arrival_rate": 1.0,
+            "mean_arrival_time": 22.74939851761677,
+            "mean_route_length": 37.160274045491235
+          }
+        }
+      },
+      "eligible_stratum": {
+        "excluded_outward_road_end": 0,
+        "overall": {
+          "trials": 100,
+          "arrivals": 100,
+          "collisions": 0,
+          "timeouts": 0,
+          "arrival_rate": 1.0,
+          "mean_arrival_time": 22.354786228617986,
+          "mean_route_length": 36.51225221657393
+        },
+        "by_layout": {
+          "cross": {
+            "trials": 12,
+            "arrivals": 12,
+            "collisions": 0,
+            "timeouts": 0,
+            "arrival_rate": 1.0,
+            "mean_arrival_time": 18.092317827555014,
+            "mean_route_length": 30.837959778692007
+          },
+          "regular": {
+            "trials": 44,
+            "arrivals": 44,
+            "collisions": 0,
+            "timeouts": 0,
+            "arrival_rate": 1.0,
+            "mean_arrival_time": 23.122665321727286,
+            "mean_route_length": 37.41176468889714
+          },
+          "asymmetric": {
+            "trials": 44,
+            "arrivals": 44,
+            "collisions": 0,
+            "timeouts": 0,
+            "arrival_rate": 1.0,
+            "mean_arrival_time": 22.74939851761677,
+            "mean_route_length": 37.160274045491235
+          }
+        }
+      }
+    },
+    "observation_state_machine": {
+      "passes_gate": false,
+      "overall_arrival_rate": 0.62,
+      "by_layout_arrival_rate": {
+        "cross": 0.9166666666666666,
+        "regular": 0.5,
+        "asymmetric": 0.6590909090909091
+      },
+      "full_split": {
+        "overall": {
+          "trials": 100,
+          "arrivals": 62,
+          "collisions": 38,
+          "timeouts": 0,
+          "arrival_rate": 0.62,
+          "mean_arrival_time": 20.751441814108638,
+          "mean_route_length": 34.107519162167
+        },
+        "by_layout": {
+          "cross": {
+            "trials": 12,
+            "arrivals": 11,
+            "collisions": 1,
+            "timeouts": 0,
+            "arrival_rate": 0.9166666666666666,
+            "mean_arrival_time": 18.39622040543074,
+            "mean_route_length": 31.748125459796707
+          },
+          "regular": {
+            "trials": 44,
+            "arrivals": 22,
+            "collisions": 22,
+            "timeouts": 0,
+            "arrival_rate": 0.5,
+            "mean_arrival_time": 20.040981451901622,
+            "mean_route_length": 32.61841171144236
+          },
+          "asymmetric": {
+            "trials": 44,
+            "arrivals": 29,
+            "collisions": 15,
+            "timeouts": 0,
+            "arrival_rate": 0.6590909090909091,
+            "mean_arrival_time": 22.183771588729716,
+            "mean_route_length": 36.13212932223651
+          }
+        }
+      },
+      "eligible_stratum": {
+        "excluded_outward_road_end": 0,
+        "overall": {
+          "trials": 100,
+          "arrivals": 62,
+          "collisions": 38,
+          "timeouts": 0,
+          "arrival_rate": 0.62,
+          "mean_arrival_time": 20.751441814108638,
+          "mean_route_length": 34.107519162167
+        },
+        "by_layout": {
+          "cross": {
+            "trials": 12,
+            "arrivals": 11,
+            "collisions": 1,
+            "timeouts": 0,
+            "arrival_rate": 0.9166666666666666,
+            "mean_arrival_time": 18.39622040543074,
+            "mean_route_length": 31.748125459796707
+          },
+          "regular": {
+            "trials": 44,
+            "arrivals": 22,
+            "collisions": 22,
+            "timeouts": 0,
+            "arrival_rate": 0.5,
+            "mean_arrival_time": 20.040981451901622,
+            "mean_route_length": 32.61841171144236
+          },
+          "asymmetric": {
+            "trials": 44,
+            "arrivals": 29,
+            "collisions": 15,
+            "timeouts": 0,
+            "arrival_rate": 0.6590909090909091,
+            "mean_arrival_time": 22.183771588729716,
+            "mean_route_length": 36.13212932223651
+          }
+        }
+      }
+    }
+  },
+  "interpretation": "On this split's eligible stratum (excluding 0 outward-facing road-end starts): waypoint solvability floor 1.000, observation-only state machine 0.620. The waypoint failures on the full split are exactly those outward-facing road-end starts (a lane-width vs turn-radius interaction; a post-hoc characterization, not an impossibility claim). Whether observations are sufficient is decided by improving the SM on separate training scenarios and evaluating once on the frozen gate split."
+}
