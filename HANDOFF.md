@@ -553,6 +553,46 @@ it before proceeding. Only then consider biologically grounded learning, with
 dopamine as a teaching/modulatory signal, **never** as goal bearing. Do not bolt
 a map/planner onto the SM — that just re-derives the waypoint witness.
 
+### 2026-09-16 Stage 2c: recurrent baseline run — negative, and reframes the test
+
+Built the same-observation recurrent/history baseline (`stage2c.py`,
+`evaluate_stage2c.py`, `test_stage2c.py`, `runs/stage2c/`). Echo-State Network
+(seeded fixed reservoir + ridge readout, NumPy only, deterministic), same
+observation interface as the SM with faithful sin/cos angles (no
+compass-difference term), trained by behavior cloning the waypoint witness.
+Matched memoryless ablation (recurrent weights zero + unit leak). Hyperparameters
+selected on `sm_train_split.json` only (70/30 within-file val split, `VAL_SEED=23`);
+`gate_split.json` evaluated **once** for both models.
+
+**One-shot gate (`runs/stage2c/gate_results.json`, sha256 `f24540770fa58f9c`):**
+recurrent **0.57** (cross/regular/asym 0.58/0.61/0.52), memoryless ablation
+**0.56** (0.67/0.59/0.50). Both **FAIL** 90%/80%; neither beats the Stage 2b SM
+(0.62) or the waypoint witness (1.00).
+
+**This does NOT falsify the route-memory hypothesis.** It rules out one specific
+setup — behavior cloning this ESN family against the privileged waypoint teacher.
+The teacher is **not** memoryless w.r.t. the student's observations: it acts on
+privileged route/pose/segment/carrot state the student never sees, so its actions
+are not a pure function of the observation, and a recurrent student could in
+principle infer some of that hidden state from history. Bounded diagnosis: the
+closed-loop collapse (≈ 0.57 vs teacher 1.00) is consistent with imitation
+covariate shift, inadequate capacity in a 32-config fixed reservoir, an
+action-loss mismatch (squared error on `(steering, accel)` ≠ arrival objective),
+and partially unobservable teacher state — none established as dominant. No
+open-loop fit-quality claim is made: per-action teacher-forced diagnostics were
+not persisted in the gate artifact. Bounded conclusion: this 32-config ESN family
+reached 57% and showed no meaningful recurrence benefit over its matched static
+ablation (56%); the result rules out this imitation setup, not route memory.
+
+**Revised next step.** The Stage 2c gate is spent (one-shot) and informed this
+diagnosis, so it cannot be the confirmation gate for what comes next. To test
+route memory on this interface, use a **memory-requiring training signal** — an
+end-to-end reward for reaching the goal rather than imitation — as a separate
+Stage 2d that freezes a **fresh, disjoint** gate split. Note the asymmetry: a
+reward-trained *failure* stays confounded (capacity/optimization/observation),
+so only a *pass* is conclusive for that controller family. Dopamine, when it
+enters, is a teaching/modulatory signal — **never** goal bearing.
+
 ## Git
 
 - `master`: Phases 1–2 slice merged.

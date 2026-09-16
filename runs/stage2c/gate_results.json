@@ -1,0 +1,121 @@
+{
+  "train_split": "runs/stage2b/sm_train_split.json",
+  "train_split_sha256": "8df212c4b270059177f98f23664125a7484991518029710e3408c07e1de9a86f",
+  "gate_split": "runs/stage2b/gate_split.json",
+  "gate_split_sha256": "3f7863a68261f5ee031054b528d3a56937ae663a06bcfcb73e49c28ccf907e8f",
+  "gate": {
+    "overall_rate": 0.9,
+    "per_layout_rate": 0.8
+  },
+  "hyperparameters": {
+    "n_reservoir": 64,
+    "spectral_radius": 0.8,
+    "leak": 0.5,
+    "input_scale": 1.0,
+    "ridge": 0.0001
+  },
+  "esn_seed": 0,
+  "recurrent": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.57,
+    "by_layout_arrival_rate": {
+      "cross": 0.5833333333333334,
+      "regular": 0.6136363636363636,
+      "asymmetric": 0.5227272727272727
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 57,
+        "collisions": 42,
+        "timeouts": 1,
+        "arrival_rate": 0.57,
+        "mean_arrival_time": 23.150897952204826,
+        "mean_route_length": 38.426077127487005
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 7,
+          "collisions": 5,
+          "timeouts": 0,
+          "arrival_rate": 0.5833333333333334,
+          "mean_arrival_time": 17.72550324687405,
+          "mean_route_length": 31.60281441059959
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 27,
+          "collisions": 17,
+          "timeouts": 0,
+          "arrival_rate": 0.6136363636363636,
+          "mean_arrival_time": 23.836384413000992,
+          "mean_route_length": 38.80941516494099
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 23,
+          "collisions": 20,
+          "timeouts": 1,
+          "arrival_rate": 0.5227272727272727,
+          "mean_arrival_time": 23.997403538979558,
+          "mean_route_length": 40.05271677996328
+        }
+      }
+    }
+  },
+  "memoryless_ablation": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.56,
+    "by_layout_arrival_rate": {
+      "cross": 0.6666666666666666,
+      "regular": 0.5909090909090909,
+      "asymmetric": 0.5
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 56,
+        "collisions": 43,
+        "timeouts": 1,
+        "arrival_rate": 0.56,
+        "mean_arrival_time": 24.67637646051129,
+        "mean_route_length": 40.708118484024965
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 8,
+          "collisions": 4,
+          "timeouts": 0,
+          "arrival_rate": 0.6666666666666666,
+          "mean_arrival_time": 18.30389212611455,
+          "mean_route_length": 32.81091815530617
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 26,
+          "collisions": 18,
+          "timeouts": 0,
+          "arrival_rate": 0.5909090909090909,
+          "mean_arrival_time": 26.993061520470373,
+          "mean_route_length": 43.857749561132586
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 22,
+          "collisions": 21,
+          "timeouts": 1,
+          "arrival_rate": 0.5,
+          "mean_arrival_time": 24.25574296579482,
+          "mean_route_length": 39.8575364215228
+        }
+      }
+    }
+  },
+  "references": {
+    "waypoint_witness": 1.0,
+    "state_machine": 0.62
+  },
+  "interpretation": "Recurrent 0.570 vs memoryless ablation 0.560 (references: waypoint witness 1.00, Stage 2b state machine 0.62). The recurrent baseline does not clear the gate: temporal memory over this interface, trained by imitation, is not sufficient here. Diagnose capacity, imitation drift, and observation ambiguity before any dopamine/connectome learning."
+}
