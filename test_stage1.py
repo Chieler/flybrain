@@ -147,6 +147,16 @@ class TestBrain(unittest.TestCase):
         for filename, url in prep.SOURCES.values():
             self.assertEqual(filename, url.rsplit("/", 1)[-1])
 
+    def test_epg_preferred_angles_mirror_pb_halves(self):
+        angles = prep.epg_preferred_angles(
+            ["EPG(PB08)_L1", "EPG(PB08)_L2", "EPG(PB08)_R1", "EPG(PB08)_R2"]
+        )
+        np.testing.assert_allclose(
+            angles,
+            [0.0, math.pi / 4.0, -math.pi / 8.0, -3.0 * math.pi / 8.0],
+            atol=1e-12,
+        )
+
     def test_adapter_symmetry(self):
         a = br.Adapter(gain=2.0, bias=0.0)
         self.assertEqual(a(0.5, 0.5), 0.0)      # equal pools -> no steering

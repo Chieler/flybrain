@@ -1,0 +1,89 @@
+{
+  "conventional": {
+    "trials": 100,
+    "arrivals": 100,
+    "boundaries": 0,
+    "timeouts": 0,
+    "mean_arrival_time": 5.316274382017307,
+    "mean_route_length": 10.632548764034674,
+    "mean_return": 0.9468372561798268
+  },
+  "zero": {
+    "trials": 100,
+    "arrivals": 7,
+    "boundaries": 93,
+    "timeouts": 0,
+    "mean_arrival_time": 5.158822132502833,
+    "mean_route_length": 10.31764426500572,
+    "mean_return": -0.9885743263907575
+  },
+  "random": {
+    "trials": 100,
+    "arrivals": 6,
+    "boundaries": 94,
+    "timeouts": 0,
+    "mean_arrival_time": 4.610462415927123,
+    "mean_route_length": 9.220924831854287,
+    "mean_return": -1.0079125115004768
+  },
+  "neural": {
+    "trials": 100,
+    "arrivals": 20,
+    "boundaries": 40,
+    "timeouts": 40,
+    "mean_arrival_time": 9.972590524045554,
+    "mean_route_length": 19.945181048091193,
+    "mean_return": -0.4034083573390527
+  },
+  "cue_withheld": {
+    "trials": 100,
+    "arrivals": 6,
+    "boundaries": 75,
+    "timeouts": 19,
+    "mean_arrival_time": 4.775552672926552,
+    "mean_route_length": 9.55110534585314,
+    "mean_return": -0.8698692004551178
+  },
+  "pathway_silenced": {
+    "trials": 100,
+    "arrivals": 5,
+    "boundaries": 95,
+    "timeouts": 0,
+    "mean_arrival_time": 4.291635860223077,
+    "mean_route_length": 8.583271720446172,
+    "mean_return": -1.0476384083814347
+  },
+  "shuffled_seed1": {
+    "calibrated_gain": 16.0,
+    "calibrated_bias": 0.0,
+    "trials": 100,
+    "arrivals": 7,
+    "boundaries": 93,
+    "timeouts": 0,
+    "mean_arrival_time": 5.28702585294973,
+    "mean_route_length": 10.574051705899507,
+    "mean_return": -0.9883270337456078
+  },
+  "shuffled_seed2": {
+    "calibrated_gain": 32.0,
+    "calibrated_bias": 0.0,
+    "trials": 100,
+    "arrivals": 6,
+    "boundaries": 94,
+    "timeouts": 0,
+    "mean_arrival_time": 4.992648893587851,
+    "mean_route_length": 9.98529778717574,
+    "mean_return": -1.0106589877118208
+  },
+  "shuffled_seed3": {
+    "calibrated_gain": 32.0,
+    "calibrated_bias": 0.05,
+    "trials": 100,
+    "arrivals": 6,
+    "boundaries": 66,
+    "timeouts": 28,
+    "mean_arrival_time": 8.780134189383558,
+    "mean_route_length": 17.560268378767187,
+    "mean_return": -0.7860507721101107
+  }
+}

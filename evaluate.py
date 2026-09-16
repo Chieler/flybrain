@@ -147,15 +147,33 @@ def evaluate_controller(scenarios: list[Scenario], controller,
 CALIB_GAINS = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0)  # rad per unit activity
 CALIB_BIASES = (-0.05, 0.0, 0.05)                           # rad
 
+# Declared narrow bracket extension (HANDOFF "exceed 20/100", step 1). The
+# original grid's winner (gain=32, bias=-0.05) sat on both edges, so the search
+# never bracketed an optimum; this extends beyond it. Selected by arrivals-first
+# (see _arrivals_key) on the 32 frozen training scenarios only.
+BRACKET_GAINS = (48.0, 64.0, 96.0)
+BRACKET_BIASES = (-0.10, -0.05, 0.0)
+
+
+def _mean_return_key(summ, g, b):
+    """Original selection: max mean_return, then min |bias|, then min gain."""
+    return (summ.mean_return, -abs(b), -g)
+
+
+def _arrivals_key(summ, g, b):
+    """Bracket selection (step 1): max arrivals, then mean_return, |bias|, gain."""
+    return (summ.arrivals, summ.mean_return, -abs(b), -g)
+
 
 def calibrate_adapter(scenarios, make_controller, gains=CALIB_GAINS,
-                      biases=CALIB_BIASES):
+                      biases=CALIB_BIASES, select_key=_mean_return_key):
     """Exhaust the declared gain×bias grid; return (gain, bias, grid).
 
-    `make_controller(gain, bias) -> (controller, reset)`. Ties broken by lower
-    absolute bias, then smaller gain (plan). This is adapter calibration, not a
-    claim of learning inside the fly brain; the budget is fixed and reported,
-    never silently expanded.
+    `make_controller(gain, bias) -> (controller, reset)`. `select_key(summ, g, b)`
+    produces a sort key maximized over the grid (default: the original
+    mean_return-first tie-break). This is adapter calibration, not a claim of
+    learning inside the fly brain; the budget is fixed and reported, never
+    silently expanded.
     """
     grid = []
     best = None  # (key, gain, bias)
@@ -165,7 +183,7 @@ def calibrate_adapter(scenarios, make_controller, gains=CALIB_GAINS,
             summ = evaluate_controller(scenarios, controller, reset)
             grid.append({"gain": g, "bias": b, "mean_return": summ.mean_return,
                          "arrivals": summ.arrivals, "trials": summ.trials})
-            key = (summ.mean_return, -abs(b), -g)  # max return, then |bias|, then gain
+            key = select_key(summ, g, b)
             if best is None or key > best[0]:
                 best = (key, g, b)
     return best[1], best[2], grid
@@ -340,11 +358,13 @@ def _pool_summary(pool, mode: str, gain: float, bias: float,
 
 
 def _pool_calibrate(pool, scenarios: list[Scenario],
-                    gains=CALIB_GAINS, biases=CALIB_BIASES):
+                    gains=CALIB_GAINS, biases=CALIB_BIASES,
+                    select_key=_mean_return_key):
     """Parallel calibrate_adapter: flatten grid×scenarios into one balanced batch.
 
-    Same grid, same tie-break as calibrate_adapter (max mean_return, then |bias|,
-    then gain), so results are identical to the serial path.
+    Same grid and same `select_key` as calibrate_adapter (default: max
+    mean_return, then |bias|, then gain), so results are identical to the serial
+    path.
     """
     cells = [(g, b) for g in gains for b in biases]
     s_dicts = [scenario_to_dict(s) for s in scenarios]
@@ -356,7 +376,7 @@ def _pool_calibrate(pool, scenarios: list[Scenario],
         summ = _summary_from_rows(rows[i * per:(i + 1) * per])
         grid.append({"gain": g, "bias": b, "mean_return": summ.mean_return,
                      "arrivals": summ.arrivals, "trials": summ.trials})
-        key = (summ.mean_return, -abs(b), -g)
+        key = select_key(summ, g, b)
         if best is None or key > best[0]:
             best = (key, g, b)
     return best[1], best[2], grid
@@ -383,49 +403,91 @@ def load_checkpoint(path: str) -> dict:
     return cp
 
 
+def _atomic_write_json(path: str, obj) -> None:
+    """Write JSON to `path` via a temp file + rename, so an interrupted write
+    never leaves a truncated/corrupt file behind."""
+    d = os.path.dirname(os.path.abspath(path))
+    fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(obj, f, indent=2)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
 def run_controls(data_dir: str, gain: float, bias: float, params: RateParams,
                  heldout: list[Scenario], calib: list[Scenario],
-                 shuffle_seeds=(1, 2, 3), jobs: int | None = None) -> dict:
+                 shuffle_seeds=(1, 2, 3), jobs: int | None = None,
+                 progress_path: str | None = None,
+                 calib_gains=CALIB_GAINS, calib_biases=CALIB_BIASES,
+                 select_key=_mean_return_key) -> dict:
     """Held-out neural controller plus every declared control/intervention.
 
-    Shuffled connectivity is RE-calibrated with exactly the same grid and
-    interfaces (three fixed seeds); all other controls use the frozen adapter.
-    Returns {name: Summary.as_dict()}.
+    Shuffled connectivity is RE-calibrated with exactly the same grid, selection
+    rule, and interfaces the real-graph candidate got (`calib_gains`,
+    `calib_biases`, `select_key`; three fixed seeds) — a matched control. All
+    other controls use the frozen adapter. Returns {name: Summary.as_dict()}.
 
     Neural episodes fan out across `jobs` processes (default: all cores). Results
     are identical to the serial path — episodes are independent and deterministic.
+
+    If `progress_path` is given, each completed condition is flushed there
+    atomically as soon as it finishes, and any condition already present in that
+    file on entry is skipped. A kill/restart therefore resumes rather than
+    discarding the whole (~18 h) run.
     """
     jobs = jobs or os.cpu_count() or 1
     results: dict = {}
+    if progress_path and os.path.exists(progress_path):
+        with open(progress_path) as f:
+            results = json.load(f)
+        if results:
+            print(f"resuming: {sorted(results)} already done, skipping")
+
+    def record(name: str, summary: dict) -> None:
+        results[name] = summary
+        if progress_path:
+            _atomic_write_json(progress_path, results)
 
     # Non-neural controls: no matvec, trivially fast — keep serial.
-    results["conventional"] = evaluate_controller(heldout, conventional_baseline()).as_dict()
-    results["zero"] = evaluate_controller(heldout, *zero_steering()).as_dict()
-    results["random"] = evaluate_controller(heldout, *random_steering(seed=0)).as_dict()
+    if "conventional" not in results:
+        record("conventional", evaluate_controller(heldout, conventional_baseline()).as_dict())
+    if "zero" not in results:
+        record("zero", evaluate_controller(heldout, *zero_steering()).as_dict())
+    if "random" not in results:
+        record("random", evaluate_controller(heldout, *random_steering(seed=0)).as_dict())
 
     # Neural + interventions on the base graph: one pool pinned to the base Brain.
     base_spec = {"data_dir": data_dir, "params": params.__dict__}
-    with mp.Pool(jobs, initializer=_init_worker, initargs=(base_spec,)) as pool:
-        results["neural"] = _pool_summary(pool, "neural", gain, bias, heldout).as_dict()
-        results["cue_withheld"] = _pool_summary(pool, "cue_withheld", gain, bias, heldout).as_dict()
-        results["pathway_silenced"] = _pool_summary(pool, "pathway_silenced", gain, bias, heldout).as_dict()
+    base_modes = [m for m in ("neural", "cue_withheld", "pathway_silenced")
+                  if m not in results]
+    if base_modes:
+        with mp.Pool(jobs, initializer=_init_worker, initargs=(base_spec,)) as pool:
+            for mode in base_modes:
+                record(mode, _pool_summary(pool, mode, gain, bias, heldout).as_dict())
 
     # Shuffled-connectivity controls: precompute each shuffled W once to a temp
     # npz (so workers skip the O(edges) shuffle loop), then re-calibrate + evaluate.
-    W = sp.load_npz(f"{data_dir}/weights_signed.npz")
-    for seed in shuffle_seeds:
-        fd, npz_path = tempfile.mkstemp(suffix=".npz")
-        os.close(fd)
-        sp.save_npz(npz_path, sp.csr_array(shuffle_connectivity(W, seed)))
-        spec = {**base_spec, "shuffled_npz": npz_path}
-        try:
-            with mp.Pool(jobs, initializer=_init_worker, initargs=(spec,)) as pool:
-                g, b, _ = _pool_calibrate(pool, calib)
-                summ = _pool_summary(pool, "neural", g, b, heldout)
-        finally:
-            os.unlink(npz_path)
-        results[f"shuffled_seed{seed}"] = {
-            "calibrated_gain": g, "calibrated_bias": b, **summ.as_dict()}
+    pending = [s for s in shuffle_seeds if f"shuffled_seed{s}" not in results]
+    if pending:
+        W = sp.load_npz(f"{data_dir}/weights_signed.npz")
+        for seed in pending:
+            fd, npz_path = tempfile.mkstemp(suffix=".npz")
+            os.close(fd)
+            sp.save_npz(npz_path, sp.csr_array(shuffle_connectivity(W, seed)))
+            spec = {**base_spec, "shuffled_npz": npz_path}
+            try:
+                with mp.Pool(jobs, initializer=_init_worker, initargs=(spec,)) as pool:
+                    g, b, _ = _pool_calibrate(pool, calib, gains=calib_gains,
+                                              biases=calib_biases, select_key=select_key)
+                    summ = _pool_summary(pool, "neural", g, b, heldout)
+            finally:
+                os.unlink(npz_path)
+            record(f"shuffled_seed{seed}",
+                   {"calibrated_gain": g, "calibrated_bias": b, **summ.as_dict()})
     return results
 
 
@@ -441,6 +503,11 @@ if __name__ == "__main__":
                    help="Run the declared adapter grid on a real graph; write a checkpoint.")
     p.add_argument("--controls", action="store_true",
                    help="Run held-out neural controller + all controls from a checkpoint.")
+    p.add_argument("--bracket", action="store_true",
+                   help="Declared step-1 experiment: calibrate the narrow bracket grid "
+                        "(gains 48/64/96 x biases -0.10/-0.05/0) on the calibration set "
+                        "with arrivals-first selection, then run only the winner on the "
+                        "held-out set (neural controller only, no control suite).")
     p.add_argument("--scenarios", default="scenarios.json",
                    help="Held-out scenarios (also the calibration set unless --calib-scenarios).")
     p.add_argument("--calib-scenarios", help="Calibration scenarios (defaults to --scenarios).")
@@ -449,7 +516,20 @@ if __name__ == "__main__":
     p.add_argument("--jobs", type=int, default=None,
                    help="Parallel worker processes for neural episodes "
                         "(default: all CPU cores). Use 1 to force serial.")
+    p.add_argument("--select", choices=("return", "arrivals"), default="return",
+                   help="Calibration selection rule (--calibrate/--controls shuffled "
+                        "recalibration): 'return' = original max mean_return; "
+                        "'arrivals' = max arrivals first (bracket experiment).")
+    p.add_argument("--calib-grid", choices=("default", "bracket"), default="default",
+                   help="Calibration grid: 'default' = original 8x3; 'bracket' = "
+                        "the declared narrow extension (48/64/96 x -0.10/-0.05/0).")
     args = p.parse_args()
+
+    _GRIDS = {"default": (CALIB_GAINS, CALIB_BIASES),
+              "bracket": (BRACKET_GAINS, BRACKET_BIASES)}
+    _SELECTS = {"return": _mean_return_key, "arrivals": _arrivals_key}
+    sel_gains, sel_biases = _GRIDS[args.calib_grid]
+    sel_key = _SELECTS[args.select]
 
     if args.gen_scenarios:
         sc = generate_scenarios(args.gen_scenarios, args.seed)
@@ -467,7 +547,8 @@ if __name__ == "__main__":
         jobs = args.jobs or os.cpu_count() or 1
         spec = {"data_dir": args.data, "params": params.__dict__}
         with mp.Pool(jobs, initializer=_init_worker, initargs=(spec,)) as pool:
-            gain, bias, grid = _pool_calibrate(pool, calib)
+            gain, bias, grid = _pool_calibrate(pool, calib, gains=sel_gains,
+                                               biases=sel_biases, select_key=sel_key)
         save_checkpoint(args.checkpoint, gain, bias, params, args.data)
         print(json.dumps({"gain": gain, "bias": bias, "budget": len(grid),
                           "checkpoint": args.checkpoint}, indent=2))
@@ -477,10 +558,50 @@ if __name__ == "__main__":
         cp = load_checkpoint(args.checkpoint)
         heldout = load_scenarios(args.scenarios)
         calib = load_scenarios(args.calib_scenarios or args.scenarios)
+        out = args.out if args.out != "scenarios.json" else "results.json"
+        # Persist/resume into the output file itself, so a kill mid-run keeps
+        # every already-completed condition (plan: no whole-run discard).
         res = run_controls(args.data, cp["gain"], cp["bias"], cp["params"],
-                           heldout, calib, jobs=args.jobs)
-        with open(args.out if args.out != "scenarios.json" else "results.json", "w") as f:
-            json.dump(res, f, indent=2)
+                           heldout, calib, jobs=args.jobs, progress_path=out,
+                           calib_gains=sel_gains, calib_biases=sel_biases,
+                           select_key=sel_key)
         print(json.dumps(res, indent=2))
+    elif args.bracket:
+        if not args.data:
+            p.error("--bracket needs --data (prepared connectome dir)")
+        # Step 1 of the "exceed 20/100" plan, run as a DECLARED separate
+        # experiment: extended grid, arrivals-first selection, held-out opened
+        # exactly once (only the frozen winner). Dynamics come from the frozen
+        # Stage 1 checkpoint; only the adapter gain/bias are re-selected here.
+        cp = load_checkpoint(args.checkpoint)
+        params = cp["params"]
+        calib = load_scenarios(args.calib_scenarios or args.scenarios)
+        heldout = load_scenarios(args.scenarios)
+        out = args.out if args.out != "scenarios.json" else "bracket_results.json"
+        spec = {"data_dir": args.data, "params": params.__dict__}
+        jobs = args.jobs or os.cpu_count() or 1
+        with mp.Pool(jobs, initializer=_init_worker, initargs=(spec,)) as pool:
+            gain, bias, grid = _pool_calibrate(
+                pool, calib, gains=BRACKET_GAINS, biases=BRACKET_BIASES,
+                select_key=_arrivals_key)
+            print(json.dumps({"stage": "calibration", "grid": grid,
+                              "winner": {"gain": gain, "bias": bias}}, indent=2))
+            heldout_summary = _pool_summary(pool, "neural", gain, bias, heldout).as_dict()
+        payload = {
+            "experiment": "stage1_bracket_step1",
+            "selection": "max arrivals, then mean_return, then min abs(bias), then min gain",
+            "grid_gains": list(BRACKET_GAINS), "grid_biases": list(BRACKET_BIASES),
+            "data_dir": args.data, "rate_params": params.__dict__,
+            "n_calib": len(calib), "n_heldout": len(heldout),
+            "calibration_grid": grid,
+            "winner": {"gain": gain, "bias": bias},
+            "heldout": heldout_summary,
+            "baseline_reference": {"neural_arrivals": 20, "trials": 100},
+        }
+        _atomic_write_json(out, payload)
+        print(json.dumps({"winner": {"gain": gain, "bias": bias},
+                          "heldout": heldout_summary,
+                          "beats_20": heldout_summary["arrivals"] > 20,
+                          "out": out}, indent=2))
     else:
         p.print_help()

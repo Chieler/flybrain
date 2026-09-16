@@ -68,22 +68,33 @@ OUTPUT_TYPE = "PFL3"  # split L/R by somaSide
 _PB_GLOM = re.compile(r"_[LR](\d+)")     # PB glomerulus index
 _FB_COL = re.compile(r"_C(\d+)")          # FB column index
 
-# Coordinate convention (a DOCUMENTED, tunable modeling assumption, moderate
-# confidence): map each anatomical index to a uniform azimuth tiling of [0, 2pi),
-# counterclockwise-positive, origin at index 1, identical for L/R hemisphere
-# copies. Absolute offset and handedness are NOT asserted here; Phase 3 resolves
-# them behaviorally (rotation-consistency check + adapter sign/gain calibration).
-# Grounded in the EB/PB heading-bump and FB goal-column literature (see manifest
-# references); this is not a per-neuron measured preferred direction.
+# Corrected coordinate convention (published PB/EB geometry): PB halves map in
+# opposite directions around the EB, with medial EPG wedges separated by 22.5
+# degrees. FB goals retain the uniform nine-column assumption; the absolute
+# world origin remains free. This is not a per-neuron measured preference.
 ANGLE_CONVENTION = (
-    "azimuth = 2*pi*(anatomical_index - 1)/n_indices, ccw-positive, origin at "
-    "index 1, identical for L/R copies; absolute offset+handedness resolved "
-    "behaviorally in Phase 3, not asserted.")
-ANGLE_CONFIDENCE = "moderate (anatomical tiling assumption, behaviorally tuned)"
+    "heading: L_i=(i-1)*pi/4, R_i=-pi/8-(i-1)*pi/4; goal: "
+    "2*pi*(FB_column-1)/9; ccw-positive, absolute world origin arbitrary."
+)
+ANGLE_CONFIDENCE = "moderate (published PB/EB mapping; nine-column FB assumption)"
 ANGLE_REFERENCES = [
     "MaleCNS v1.0 annotations (PB glomerulus / FB column in instance names)",
     "Heading/goal FC2/PFL3 circuit: https://www.nature.com/articles/s41586-023-07006-3",
+    "PB-to-EB projection geometry: https://pmc.ncbi.nlm.nih.gov/articles/PMC4407839/",
 ]
+
+
+def epg_preferred_angles(instances: list[str]) -> list[float]:
+    """Return side-aware EPG angles from PB glomerulus instance names."""
+    angles = []
+    for instance in instances:
+        match = re.search(r"_([LR])(\d+)$", instance)
+        if match is None:
+            raise ValueError(f"cannot parse EPG instance {instance!r}")
+        side, raw_index = match.groups()
+        step = (int(raw_index) - 1) * math.pi / 4.0
+        angles.append(step if side == "L" else -math.pi / 8.0 - step)
+    return angles
 
 
 def _indices_from_instances(instances: list[str | None], pattern: re.Pattern):
@@ -230,6 +241,7 @@ def main(data_dir: str) -> None:
         return [idx[k] for k in order2], [angles[k] for k in order2]
 
     heading_idx, heading_ang = build_input(INPUT_TYPES["heading"], _PB_GLOM)
+    heading_ang = epg_preferred_angles([kept_instances[i] for i in heading_idx])
     goal_idx, goal_ang = build_input(INPUT_TYPES["goal"], _FB_COL)
     pfl3 = np.where(type_arr == OUTPUT_TYPE)[0]
     left_idx = sorted(int(i) for i in pfl3 if side_arr[i] == "L")

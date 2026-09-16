@@ -1,0 +1,12 @@
+{
+  "gain": 32.0,
+  "bias": -0.05,
+  "data_dir": "data/malecns-v1.0",
+  "params": {
+    "neural_dt": 0.01,
+    "tau": 0.05,
+    "baseline": 0.01,
+    "recurrent_gain": 1.0,
+    "input_gain": 1.0
+  }
+}

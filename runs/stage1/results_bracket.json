@@ -1,0 +1,89 @@
+{
+  "conventional": {
+    "trials": 100,
+    "arrivals": 100,
+    "boundaries": 0,
+    "timeouts": 0,
+    "mean_arrival_time": 5.316274382017307,
+    "mean_route_length": 10.632548764034674,
+    "mean_return": 0.9468372561798268
+  },
+  "zero": {
+    "trials": 100,
+    "arrivals": 7,
+    "boundaries": 93,
+    "timeouts": 0,
+    "mean_arrival_time": 5.158822132502833,
+    "mean_route_length": 10.31764426500572,
+    "mean_return": -0.9885743263907575
+  },
+  "random": {
+    "trials": 100,
+    "arrivals": 6,
+    "boundaries": 94,
+    "timeouts": 0,
+    "mean_arrival_time": 4.610462415927123,
+    "mean_route_length": 9.220924831854287,
+    "mean_return": -1.0079125115004768
+  },
+  "neural": {
+    "trials": 100,
+    "arrivals": 30,
+    "boundaries": 12,
+    "timeouts": 58,
+    "mean_arrival_time": 10.347789535434204,
+    "mean_route_length": 20.695579070868533,
+    "mean_return": -0.04507211476332783
+  },
+  "cue_withheld": {
+    "trials": 100,
+    "arrivals": 23,
+    "boundaries": 2,
+    "timeouts": 75,
+    "mean_arrival_time": 15.448131187613399,
+    "mean_route_length": 30.89626237522695,
+    "mean_return": -0.05320882383932646
+  },
+  "pathway_silenced": {
+    "trials": 100,
+    "arrivals": 18,
+    "boundaries": 13,
+    "timeouts": 69,
+    "mean_arrival_time": 15.182320498213633,
+    "mean_route_length": 30.364640996427383,
+    "mean_return": -0.20126369333686614
+  },
+  "shuffled_seed1": {
+    "calibrated_gain": 48.0,
+    "calibrated_bias": -0.1,
+    "trials": 100,
+    "arrivals": 12,
+    "boundaries": 57,
+    "timeouts": 31,
+    "mean_arrival_time": 9.637786209318062,
+    "mean_route_length": 19.27557241863622,
+    "mean_return": -0.6540489485162091
+  },
+  "shuffled_seed2": {
+    "calibrated_gain": 64.0,
+    "calibrated_bias": -0.1,
+    "trials": 100,
+    "arrivals": 19,
+    "boundaries": 1,
+    "timeouts": 80,
+    "mean_arrival_time": 13.815940334684347,
+    "mean_route_length": 27.631880669368797,
+    "mean_return": -0.08755526402313711
+  },
+  "shuffled_seed3": {
+    "calibrated_gain": 96.0,
+    "calibrated_bias": -0.1,
+    "trials": 100,
+    "arrivals": 10,
+    "boundaries": 29,
+    "timeouts": 61,
+    "mean_arrival_time": 14.667640577170735,
+    "mean_route_length": 29.335281154341594,
+    "mean_return": -0.4474579967888599
+  }
+}

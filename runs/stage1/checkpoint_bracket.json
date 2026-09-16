@@ -1,0 +1,116 @@
+{
+  "data_dir": "data/malecns-v1.0",
+  "data_manifest_sha256": "e3ae4ae64b9b59ce322ecc889e870bddab9990abe7bccee28d22dfbc3f1420f2",
+  "training_seed": 0,
+  "training_scenarios": "training_scenarios.json",
+  "rate_params": {
+    "neural_dt": 0.01,
+    "tau": 0.05,
+    "baseline": 0.01,
+    "recurrent_gain": 1.0,
+    "input_gain": 1.0
+  },
+  "adapter": {
+    "gain": 48.0,
+    "bias": -0.1
+  },
+  "selection": "max arrivals, then mean_return, then min abs(bias), then min gain",
+  "experiment": "stage1_bracket_step1 (HANDOFF exceed-20/100, step 1)",
+  "grid": {
+    "gains": [
+      48.0,
+      64.0,
+      96.0
+    ],
+    "biases": [
+      -0.1,
+      -0.05,
+      0.0
+    ]
+  },
+  "best": {
+    "gain": 48.0,
+    "bias": -0.1,
+    "training_summary": {
+      "gain": 48.0,
+      "bias": -0.1,
+      "mean_return": -0.10921552616519926,
+      "arrivals": 11,
+      "trials": 32
+    },
+    "heldout_summary": {
+      "trials": 100,
+      "arrivals": 30,
+      "boundaries": 12,
+      "timeouts": 58,
+      "mean_arrival_time": 10.347789535434204,
+      "mean_route_length": 20.695579070868533,
+      "mean_return": -0.04507211476332783
+    }
+  },
+  "candidates": [
+    {
+      "gain": 48.0,
+      "bias": -0.1,
+      "mean_return": -0.10921552616519926,
+      "arrivals": 11,
+      "trials": 32
+    },
+    {
+      "gain": 48.0,
+      "bias": -0.05,
+      "mean_return": -0.6081890574507303,
+      "arrivals": 5,
+      "trials": 32
+    },
+    {
+      "gain": 48.0,
+      "bias": 0.0,
+      "mean_return": -0.7169997496585845,
+      "arrivals": 3,
+      "trials": 32
+    },
+    {
+      "gain": 64.0,
+      "bias": -0.1,
+      "mean_return": -0.35553355733643544,
+      "arrivals": 5,
+      "trials": 32
+    },
+    {
+      "gain": 64.0,
+      "bias": -0.05,
+      "mean_return": -0.3887126044013371,
+      "arrivals": 7,
+      "trials": 32
+    },
+    {
+      "gain": 64.0,
+      "bias": 0.0,
+      "mean_return": -0.5990387270064519,
+      "arrivals": 6,
+      "trials": 32
+    },
+    {
+      "gain": 96.0,
+      "bias": -0.1,
+      "mean_return": -0.4660717636972694,
+      "arrivals": 5,
+      "trials": 32
+    },
+    {
+      "gain": 96.0,
+      "bias": -0.05,
+      "mean_return": -0.5521607041614591,
+      "arrivals": 5,
+      "trials": 32
+    },
+    {
+      "gain": 96.0,
+      "bias": 0.0,
+      "mean_return": -0.44322053535182476,
+      "arrivals": 7,
+      "trials": 32
+    }
+  ]
+}

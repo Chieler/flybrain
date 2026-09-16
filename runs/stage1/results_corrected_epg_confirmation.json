@@ -1,0 +1,17 @@
+{
+  "experiment": "stage1_corrected_epg_confirmation",
+  "checkpoint": "runs/stage1/checkpoint_corrected_epg.json",
+  "scenarios": "runs/stage1/confirmation_corrected_epg_seed20260914.json",
+  "scenario_seed": 20260914,
+  "gain": 32.0,
+  "bias": -0.05,
+  "summary": {
+    "trials": 100,
+    "arrivals": 92,
+    "boundaries": 1,
+    "timeouts": 7,
+    "mean_arrival_time": 11.899439971504233,
+    "mean_route_length": 23.798879943008593,
+    "mean_return": 0.7767240874902487
+  }
+}
