@@ -20,6 +20,18 @@ from simulation import MAX_STEERING, wrap_angle
 AVOIDANCE_GAINS = (0.0, 0.25, 0.5, 1.0)
 BRAKE_DISTANCES = (2.0, 4.0, 6.0)
 
+# --- step #3: predeclared direct-compass bracket grid + reliability gate ---
+DEV_AVOIDANCE_GAINS = (1.0, 1.5, 2.0, 3.0)
+DEV_COMMIT_DISTANCES = (1.5, 2.5)
+DEV_RELEASE_MARGINS = (1.5, 3.0)   # release_distance = commit_distance + margin
+DEV_RECOVER_SPEEDS = (1.0,)
+# step #4: goal-aware commit clearance (normalized 0..1). 0.0 reproduces the
+# pure-openness commit (step #2/#3 baseline) inside the same grid.
+DEV_GOAL_CLEARANCES = (0.0, 0.3, 0.5, 0.7)
+DEV_BRAKE_DISTANCE = 6.0           # inert lever; held fixed (see HANDOFF diagnosis)
+GATE_OVERALL_RATE = 0.90           # >= 90/100 overall
+GATE_PER_LAYOUT_RATE = 0.80        # >= 80% in every layout
+
 CONTROL_NAMES = (
     "neural", "direct_compass", "sensor_only", "neural_no_sensors",
     "goal_cue_withheld", "pfl3_silenced",
@@ -56,6 +68,52 @@ def generate_scenario_splits(seed: int = 2):
             timeout=MAX_SIM_TIME, label=f"heldout-{name}-{i:03d}",
         ) for i, (start, target) in enumerate(test_pairs)]
     return training, heldout
+
+
+def _route_key(s: StreetScenario) -> tuple:
+    return (s.layout, s.start.x, s.start.y, s.target_x, s.target_y)
+
+
+def _scenario_key(s: StreetScenario) -> tuple:
+    return (s.layout, s.start.x, s.start.y, s.start.heading, s.target_x, s.target_y)
+
+
+def generate_dev_split(seed: int = 7,
+                       exclude: list[StreetScenario] | None = None) -> list[StreetScenario]:
+    """A fresh 100-scenario development split (12/44/44) for the step-#3 gate.
+
+    Every dev scenario differs from every scenario in `exclude` (the seed-2
+    training + held-out sets) by at least its start heading, and fully-fresh
+    routes are preferred first — a route already used by a prior set is only
+    reused (with a new heading) where the layout's route pool is exhausted, which
+    happens for the single-intersection `cross` layout. Never reuse the held-out
+    set for tuning.
+    """
+    rng = random.Random(seed)
+    layouts = initial_layouts()
+    headings = (0.0, math.pi / 2, math.pi, -math.pi / 2)
+    counts = {"cross": 12, "regular": 44, "asymmetric": 44}
+    excluded_scenarios = {_scenario_key(s) for s in (exclude or [])}
+    excluded_routes = {_route_key(s) for s in (exclude or [])}
+    dev = []
+    for name, layout in layouts.items():
+        points = _waypoints(layout)
+        pairs = [(start, target) for start in points for target in points
+                 if start != target and math.dist(start, target) >= 12.0]
+        candidates = [(start, target, h) for (start, target) in pairs for h in headings
+                      if (name, *start, h, *target) not in excluded_scenarios]
+        rng.shuffle(candidates)
+        # Stable sort: route-fresh candidates (key False) keep their shuffled
+        # order and come before route-reused ones.
+        candidates.sort(key=lambda c: (name, *c[0], *c[1]) in excluded_routes)
+        if len(candidates) < counts[name]:
+            raise SystemExit(f"layout {name}: only {len(candidates)} fresh scenarios "
+                             f"available, need {counts[name]}")
+        dev += [StreetScenario(
+            name, StreetCarState(*start, h, 0.0), *target,
+            timeout=MAX_SIM_TIME, label=f"dev-{name}-{i:03d}",
+        ) for i, (start, target, h) in enumerate(candidates[:counts[name]])]
+    return dev
 
 
 def scenario_to_dict(s: StreetScenario) -> dict:
@@ -167,20 +225,79 @@ def stage2_factory(brain: Brain, stage1_checkpoint: dict):
     return make
 
 
+def _avoidance_clone(adapter: Stage2Adapter, brain_gain: float,
+                     bias: float) -> Stage2Adapter:
+    """Copy a source adapter's avoidance + recovery config with a new steer term."""
+    return Stage2Adapter(brain_gain, bias, adapter.avoidance_gain,
+                         adapter.brake_distance, adapter.cruise_speed,
+                         adapter.max_steering, adapter.commit_distance,
+                         adapter.release_distance, adapter.recover_speed,
+                         adapter.goal_clearance)
+
+
 def sensor_only_controller(adapter: Stage2Adapter):
-    local = Stage2Adapter(0.0, 0.0, adapter.avoidance_gain,
-                          adapter.brake_distance, adapter.cruise_speed)
-    return lambda obs: local(0.0, 0.0, obs.ranges, obs.speed)
+    local = _avoidance_clone(adapter, 0.0, 0.0)
+    controller = lambda obs: local(0.0, 0.0, obs.ranges, obs.speed)
+    controller.reset, controller.adapter = local.reset, local
+    return controller
 
 
 def direct_compass_controller(adapter: Stage2Adapter):
-    local = Stage2Adapter(1.0, 0.0, adapter.avoidance_gain,
-                          adapter.brake_distance, adapter.cruise_speed)
+    local = _avoidance_clone(adapter, 1.0, 0.0)
     def controller(obs):
         error = wrap_angle(obs.goal_bearing - obs.heading)
         signal = max(-MAX_STEERING, min(MAX_STEERING, 4.0 * error))
         return local(signal, 0.0, obs.ranges, obs.speed)
+    controller.reset, controller.adapter = local.reset, local
     return controller
+
+
+def bracket_direct_compass(dev_scenarios: list[StreetScenario],
+                           avoidance_gains=DEV_AVOIDANCE_GAINS,
+                           commit_distances=DEV_COMMIT_DISTANCES,
+                           release_margins=DEV_RELEASE_MARGINS,
+                           recover_speeds=DEV_RECOVER_SPEEDS,
+                           goal_clearances=DEV_GOAL_CLEARANCES,
+                           brake_distance=DEV_BRAKE_DISTANCE) -> tuple[dict, list[dict]]:
+    """Bracket avoidance + commit-and-hold recovery on the cheap direct-compass
+    controller (no connectome). Scores each predeclared config against the gate.
+    """
+    layouts = initial_layouts()
+    grid, best = [], None
+    for gain in avoidance_gains:
+        for commit in commit_distances:
+            for margin in release_margins:
+                for recover in recover_speeds:
+                    for clearance in goal_clearances:
+                        source = Stage2Adapter(0.0, 0.0, gain, brake_distance,
+                                               commit_distance=commit,
+                                               release_distance=commit + margin,
+                                               recover_speed=recover,
+                                               goal_clearance=clearance)
+                        controller = direct_compass_controller(source)
+                        breakdown = evaluate_breakdown(dev_scenarios, layouts,
+                                                       controller, controller.reset)
+                        overall = breakdown["overall"]["arrival_rate"]
+                        per_layout = {name: breakdown["by_layout"][name]["arrival_rate"]
+                                      for name in layouts}
+                        passes = (overall >= GATE_OVERALL_RATE and
+                                  all(r >= GATE_PER_LAYOUT_RATE for r in per_layout.values()))
+                        row = {"avoidance_gain": gain, "commit_distance": commit,
+                               "release_distance": commit + margin,
+                               "recover_speed": recover, "goal_clearance": clearance,
+                               "overall_arrival_rate": overall,
+                               "by_layout_arrival_rate": per_layout, "passes_gate": passes,
+                               "overall": breakdown["overall"], "by_layout": breakdown["by_layout"]}
+                        grid.append(row)
+                        print(f"  gain={gain} commit={commit} release={commit + margin} "
+                              f"recover={recover} clearance={clearance}: overall={overall:.2f} "
+                              f"per={ {k: round(v, 2) for k, v in per_layout.items()} } "
+                              f"{'PASS' if passes else 'fail'}", flush=True)
+                        key = (passes, overall, min(per_layout.values()),
+                               -gain, -commit, -clearance)
+                        if best is None or key > best[0]:
+                            best = (key, row)
+    return best[1], grid
 
 
 def _controlled_neural(brain: Brain, adapter: Stage2Adapter,
@@ -255,6 +372,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Stage 2 street evaluation.")
     parser.add_argument("--freeze-scenarios", action="store_true",
                         help="Write the frozen training/held-out scenario splits.")
+    parser.add_argument("--freeze-dev-split", action="store_true",
+                        help="Write the fresh 100-scenario development split (step #3).")
+    parser.add_argument("--dev-seed", type=int, default=7)
+    parser.add_argument("--bracket", action="store_true",
+                        help="Bracket avoidance+recovery on the cheap direct-compass "
+                             "controller against the reliability gate (step #3).")
     parser.add_argument("--seed", type=int, default=2)
     parser.add_argument("--calibrate", action="store_true",
                         help="Calibrate the Stage 2 adapter on the real graph.")
@@ -264,8 +387,10 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stage1-checkpoint", default="runs/stage1/checkpoint.json")
     parser.add_argument("--training", default="runs/stage2/training.json")
     parser.add_argument("--heldout", default="runs/stage2/heldout.json")
+    parser.add_argument("--dev-split", default="runs/stage2/dev_split.json")
     parser.add_argument("--checkpoint", default="runs/stage2/checkpoint.json")
     parser.add_argument("--out", default="runs/stage2/results.json")
+    parser.add_argument("--bracket-out", default="runs/stage2/dev_bracket.json")
     return parser
 
 
@@ -305,6 +430,36 @@ def _do_controls(args) -> None:
     print(f"Wrote {args.out}")
 
 
+def _do_bracket(args) -> None:
+    dev = load_scenarios(args.dev_split)
+    print(f"Bracketing direct-compass over {len(dev)} dev scenarios "
+          f"(gate: overall>={GATE_OVERALL_RATE:.0%}, each layout>={GATE_PER_LAYOUT_RATE:.0%})")
+    best, grid = bracket_direct_compass(dev)
+    payload = {
+        "dev_split": args.dev_split,
+        "dev_split_sha256": sha256(args.dev_split),
+        "gate": {"overall_rate": GATE_OVERALL_RATE,
+                 "per_layout_rate": GATE_PER_LAYOUT_RATE},
+        "grid_declared": {
+            "avoidance_gains": list(DEV_AVOIDANCE_GAINS),
+            "commit_distances": list(DEV_COMMIT_DISTANCES),
+            "release_margins": list(DEV_RELEASE_MARGINS),
+            "recover_speeds": list(DEV_RECOVER_SPEEDS),
+            "goal_clearances": list(DEV_GOAL_CLEARANCES),
+            "brake_distance": DEV_BRAKE_DISTANCE,
+        },
+        "any_passes_gate": any(row["passes_gate"] for row in grid),
+        "best": best,
+        "candidates": grid,
+    }
+    Path(args.bracket_out).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.bracket_out).write_text(json.dumps(payload, indent=2) + "\n")
+    gated = "PASSES" if payload["any_passes_gate"] else "does NOT pass"
+    print(f"Wrote {args.bracket_out}. Best config {gated} the gate: {best['passes_gate']} "
+          f"(overall={best['overall_arrival_rate']:.2f}, "
+          f"per_layout={ {k: round(v, 2) for k, v in best['by_layout_arrival_rate'].items()} })")
+
+
 def main(argv=None) -> None:
     args = _build_parser().parse_args(argv)
     if args.freeze_scenarios:
@@ -313,6 +468,18 @@ def main(argv=None) -> None:
         save_scenarios("runs/stage2/training.json", train)
         save_scenarios("runs/stage2/heldout.json", heldout)
         print(f"Froze {len(train)} training and {len(heldout)} held-out scenarios.")
+    if args.freeze_dev_split:
+        exclude = []
+        for path in (args.training, args.heldout):
+            if Path(path).exists():
+                exclude += load_scenarios(path)
+        dev = generate_dev_split(seed=args.dev_seed, exclude=exclude)
+        Path("runs/stage2").mkdir(parents=True, exist_ok=True)
+        save_scenarios(args.dev_split, dev)
+        print(f"Froze {len(dev)} development scenarios at {args.dev_split} "
+              f"(disjoint from {len(exclude)} prior routes).")
+    if args.bracket:
+        _do_bracket(args)
     if args.calibrate:
         _do_calibrate(args)
     if args.controls:

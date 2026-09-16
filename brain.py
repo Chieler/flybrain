@@ -158,6 +158,30 @@ class Stage2Adapter:
     brake_distance: float
     cruise_speed: float = 2.0
     max_steering: float = math.radians(30.0)
+    # --- opt-in commit-and-hold recovery (disabled when commit_distance <= 0) ---
+    # When the forward sensor clearance falls below commit_distance, commit to the
+    # more-open side and hold a decisive turn (overriding the goal pull) until the
+    # forward lane reopens past release_distance. recover_speed keeps enough
+    # forward motion for the bicycle model to actually rotate out of the trap.
+    # Sensor-only: reads ranges/left_open/right_open, never geometry.
+    commit_distance: float = 0.0
+    release_distance: float = 0.0
+    recover_speed: float = 1.0
+    # --- opt-in goal-aware commit (disabled when goal_clearance <= 0) ---
+    # When choosing the commit side, prefer the side the brain/compass already
+    # wants -- the sign of the neural steer term brain_gain*(left-right)+bias --
+    # provided that side is at least goal_clearance open (normalized 0..1). If
+    # the goal side is walled below that clearance, fall back to the most-open
+    # side. This derives the goal direction from the pooled rates already passed
+    # in; it reads no geometry (the __call__ signature is unchanged).
+    goal_clearance: float = 0.0
+
+    def __post_init__(self) -> None:
+        self._committed = 0  # 0 = free, +1 = holding left, -1 = holding right
+
+    def reset(self) -> None:
+        """Clear the recovery state. Call at the start of every episode."""
+        self._committed = 0
 
     def __call__(self, left: float, right: float, ranges: tuple[float, ...],
                  speed: float):
@@ -165,11 +189,30 @@ class Stage2Adapter:
         normalized = tuple(r / SENSOR_RANGE for r in ranges)
         left_open = sum(normalized[:2]) / 2
         right_open = sum(normalized[-2:]) / 2
-        steering = self.brain_gain * (left - right) + self.bias
-        steering += self.avoidance_gain * (left_open - right_open)
+        neural_steer = self.brain_gain * (left - right) + self.bias
+        steering = neural_steer + self.avoidance_gain * (left_open - right_open)
         steering = max(-self.max_steering, min(self.max_steering, steering))
         desired = self.cruise_speed * min(1.0, ranges[2] / self.brake_distance)
         desired *= max(0.35, 1.0 - abs(steering) / self.max_steering)
+        if self.commit_distance > 0.0:
+            forward = ranges[2]
+            if self._committed == 0:
+                if forward < self.commit_distance:
+                    open_side = 1 if left_open >= right_open else -1
+                    if self.goal_clearance > 0.0:
+                        # Prefer the side the brain/compass wants, if it is open
+                        # enough; otherwise escape toward the most-open side.
+                        goal_side = 1 if neural_steer >= 0.0 else -1
+                        goal_open = left_open if goal_side > 0 else right_open
+                        self._committed = (goal_side if goal_open >= self.goal_clearance
+                                           else open_side)
+                    else:
+                        self._committed = open_side
+            elif forward > self.release_distance:
+                self._committed = 0  # forward lane has reopened
+            if self._committed != 0:
+                steering = self._committed * self.max_steering
+                desired = self.recover_speed  # keep moving so the car can rotate
         acceleration = max(-MAX_BRAKE, min(MAX_ACCEL, 2.0 * (desired - speed)))
         return Control(steering, acceleration)
 
@@ -182,6 +225,7 @@ class Stage2NeuralController:
 
     def reset(self) -> None:
         self.brain.reset()
+        self.adapter.reset()
 
     def __call__(self, obs):
         stimulus = self.brain.encode(obs.heading, obs.goal_bearing)

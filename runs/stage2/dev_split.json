@@ -1,0 +1,1402 @@
+[
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-000"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-001"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": -21.0,
+      "y": 0.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-002"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-003"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 21.0,
+      "y": 0.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-004"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 21.0,
+      "y": 0.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-005"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 0.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-006"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-007"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": -21.0,
+      "y": 0.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-008"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 0.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-009"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": 0.0,
+      "y": 0.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-010"
+  },
+  {
+    "layout": "cross",
+    "start": {
+      "x": -21.0,
+      "y": 0.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 0.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-cross-011"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-000"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-001"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-002"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-003"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-004"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-005"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-006"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-007"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-008"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-009"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-010"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-011"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-012"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-013"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-014"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-015"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-016"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-017"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-018"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-019"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-020"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-021"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-022"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-023"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-024"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": 10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-025"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-026"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-027"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 21.0,
+      "y": 10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-028"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-029"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-030"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-031"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-032"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-033"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-034"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-035"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": 10.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-036"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-037"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-038"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": 10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-039"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -10.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-040"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -10.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-041"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": -21.0,
+      "y": -10.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-042"
+  },
+  {
+    "layout": "regular",
+    "start": {
+      "x": 10.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 10.0,
+    "target_y": -10.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-regular-043"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-000"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-001"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-002"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-003"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-004"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-005"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-006"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-007"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-008"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-009"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-010"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-011"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-012"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-013"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-014"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": -21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-015"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-016"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-017"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-018"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-019"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-020"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-021"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-022"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-023"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 21.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-024"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-025"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": -8.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-026"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-027"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -8.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-028"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-029"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": -8.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-030"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-031"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -8.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-032"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-033"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": 0.0,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-034"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": 11.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-035"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 21.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-036"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-037"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 7.0,
+      "y": 11.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-038"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": 3.141592653589793,
+      "speed": 0.0
+    },
+    "target_x": -21.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-039"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -12.0,
+      "y": 21.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-040"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": -21.0,
+      "y": 11.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-041"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": -8.0,
+      "heading": 1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": 7.0,
+    "target_y": -8.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-042"
+  },
+  {
+    "layout": "asymmetric",
+    "start": {
+      "x": 21.0,
+      "y": 11.0,
+      "heading": -1.5707963267948966,
+      "speed": 0.0
+    },
+    "target_x": -12.0,
+    "target_y": -21.0,
+    "target_radius": 1.5,
+    "timeout": 45.0,
+    "label": "dev-asymmetric-043"
+  }
+]

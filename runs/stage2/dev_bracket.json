@@ -1,0 +1,898 @@
+{
+  "dev_split": "runs/stage2/dev_split.json",
+  "dev_split_sha256": "1a3682705aa39d9d2d4acb5c3bd8465f3f1276064fceadc587395e302bb2c3db",
+  "gate": {
+    "overall_rate": 0.9,
+    "per_layout_rate": 0.8
+  },
+  "grid_declared": {
+    "avoidance_gains": [
+      1.0,
+      1.5,
+      2.0,
+      3.0
+    ],
+    "commit_distances": [
+      1.5,
+      2.5
+    ],
+    "release_margins": [
+      1.5,
+      3.0
+    ],
+    "recover_speeds": [
+      1.0
+    ],
+    "brake_distance": 6.0
+  },
+  "any_passes_gate": false,
+  "best": {
+    "avoidance_gain": 1.5,
+    "commit_distance": 2.5,
+    "release_distance": 4.0,
+    "recover_speed": 1.0,
+    "overall_arrival_rate": 0.74,
+    "by_layout_arrival_rate": {
+      "cross": 0.8333333333333334,
+      "regular": 0.75,
+      "asymmetric": 0.7045454545454546
+    },
+    "passes_gate": false,
+    "overall": {
+      "trials": 100,
+      "arrivals": 74,
+      "collisions": 22,
+      "timeouts": 4,
+      "arrival_rate": 0.74,
+      "mean_arrival_time": 25.965045048387132,
+      "mean_route_length": 34.71072002198414
+    },
+    "by_layout": {
+      "cross": {
+        "trials": 12,
+        "arrivals": 10,
+        "collisions": 2,
+        "timeouts": 0,
+        "arrival_rate": 0.8333333333333334,
+        "mean_arrival_time": 24.02357838090696,
+        "mean_route_length": 34.43559503192868
+      },
+      "regular": {
+        "trials": 44,
+        "arrivals": 33,
+        "collisions": 11,
+        "timeouts": 0,
+        "arrival_rate": 0.75,
+        "mean_arrival_time": 25.841514201306694,
+        "mean_route_length": 34.10446466109879
+      },
+      "asymmetric": {
+        "trials": 44,
+        "arrivals": 31,
+        "collisions": 9,
+        "timeouts": 4,
+        "arrival_rate": 0.7045454545454546,
+        "mean_arrival_time": 26.722825197692167,
+        "mean_route_length": 35.44483862875094
+      }
+    }
+  },
+  "candidates": [
+    {
+      "avoidance_gain": 1.0,
+      "commit_distance": 1.5,
+      "release_distance": 3.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.46,
+      "by_layout_arrival_rate": {
+        "cross": 0.5833333333333334,
+        "regular": 0.4772727272727273,
+        "asymmetric": 0.4090909090909091
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 46,
+        "collisions": 52,
+        "timeouts": 2,
+        "arrival_rate": 0.46,
+        "mean_arrival_time": 21.92862617724598,
+        "mean_route_length": 30.270059077683324
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 7,
+          "collisions": 5,
+          "timeouts": 0,
+          "arrival_rate": 0.5833333333333334,
+          "mean_arrival_time": 22.22169728901644,
+          "mean_route_length": 31.91985942397319
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 21,
+          "collisions": 23,
+          "timeouts": 0,
+          "arrival_rate": 0.4772727272727273,
+          "mean_arrival_time": 21.509711291989227,
+          "mean_route_length": 29.38995417952354
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 18,
+          "collisions": 24,
+          "timeouts": 2,
+          "arrival_rate": 0.4090909090909091,
+          "mean_arrival_time": 22.303388111023683,
+          "mean_route_length": 30.655259101979237
+        }
+      }
+    },
+    {
+      "avoidance_gain": 1.0,
+      "commit_distance": 1.5,
+      "release_distance": 4.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.47,
+      "by_layout_arrival_rate": {
+        "cross": 0.5833333333333334,
+        "regular": 0.4772727272727273,
+        "asymmetric": 0.4318181818181818
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 47,
+        "collisions": 51,
+        "timeouts": 2,
+        "arrival_rate": 0.47,
+        "mean_arrival_time": 22.01530514307676,
+        "mean_route_length": 30.2360707726066
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 7,
+          "collisions": 5,
+          "timeouts": 0,
+          "arrival_rate": 0.5833333333333334,
+          "mean_arrival_time": 22.22169728901644,
+          "mean_route_length": 31.91985942397319
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 21,
+          "collisions": 23,
+          "timeouts": 0,
+          "arrival_rate": 0.4772727272727273,
+          "mean_arrival_time": 21.509711291989227,
+          "mean_route_length": 29.38995417952354
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 19,
+          "collisions": 23,
+          "timeouts": 2,
+          "arrival_rate": 0.4318181818181818,
+          "mean_arrival_time": 22.49808018787994,
+          "mean_route_length": 30.550909082879127
+        }
+      }
+    },
+    {
+      "avoidance_gain": 1.0,
+      "commit_distance": 2.5,
+      "release_distance": 4.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.7,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.7272727272727273,
+        "asymmetric": 0.6363636363636364
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 70,
+        "collisions": 27,
+        "timeouts": 3,
+        "arrival_rate": 0.7,
+        "mean_arrival_time": 24.63178265211252,
+        "mean_route_length": 34.1414878518571
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 23.075266535374183,
+          "mean_route_length": 33.98608375569587
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 32,
+          "collisions": 12,
+          "timeouts": 0,
+          "arrival_rate": 0.7272727272727273,
+          "mean_arrival_time": 24.464995353560635,
+          "mean_route_length": 33.648012804437464
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 28,
+          "collisions": 13,
+          "timeouts": 3,
+          "arrival_rate": 0.6363636363636364,
+          "mean_arrival_time": 25.37829532072123,
+          "mean_route_length": 34.76096079753712
+        }
+      }
+    },
+    {
+      "avoidance_gain": 1.0,
+      "commit_distance": 2.5,
+      "release_distance": 5.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.7,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.7272727272727273,
+        "asymmetric": 0.6363636363636364
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 70,
+        "collisions": 27,
+        "timeouts": 3,
+        "arrival_rate": 0.7,
+        "mean_arrival_time": 24.444807031342883,
+        "mean_route_length": 34.12996698620352
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 22.879684810150234,
+          "mean_route_length": 33.97362767838906
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 32,
+          "collisions": 12,
+          "timeouts": 0,
+          "arrival_rate": 0.7272727272727273,
+          "mean_arrival_time": 24.270851732345854,
+          "mean_route_length": 33.63383556708181
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 28,
+          "collisions": 13,
+          "timeouts": 3,
+          "arrival_rate": 0.6363636363636364,
+          "mean_arrival_time": 25.202585309194003,
+          "mean_route_length": 34.752809789419196
+        }
+      }
+    },
+    {
+      "avoidance_gain": 1.5,
+      "commit_distance": 1.5,
+      "release_distance": 3.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.63,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.6590909090909091,
+        "asymmetric": 0.5454545454545454
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 63,
+        "collisions": 30,
+        "timeouts": 7,
+        "arrival_rate": 0.63,
+        "mean_arrival_time": 25.319361843885428,
+        "mean_route_length": 32.249839475449434
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 26.028565020287157,
+          "mean_route_length": 34.44040932612751
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 29,
+          "collisions": 14,
+          "timeouts": 1,
+          "arrival_rate": 0.6590909090909091,
+          "mean_arrival_time": 25.506749726634972,
+          "mean_route_length": 32.110030906302946
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 24,
+          "collisions": 14,
+          "timeouts": 6,
+          "arrival_rate": 0.5454545454545454,
+          "mean_arrival_time": 24.79743349539567,
+          "mean_route_length": 31.506037392052235
+        }
+      }
+    },
+    {
+      "avoidance_gain": 1.5,
+      "commit_distance": 1.5,
+      "release_distance": 4.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.63,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.6590909090909091,
+        "asymmetric": 0.5454545454545454
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 63,
+        "collisions": 30,
+        "timeouts": 7,
+        "arrival_rate": 0.63,
+        "mean_arrival_time": 25.319361843885428,
+        "mean_route_length": 32.249839475449434
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 26.028565020287157,
+          "mean_route_length": 34.44040932612751
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 29,
+          "collisions": 14,
+          "timeouts": 1,
+          "arrival_rate": 0.6590909090909091,
+          "mean_arrival_time": 25.506749726634972,
+          "mean_route_length": 32.110030906302946
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 24,
+          "collisions": 14,
+          "timeouts": 6,
+          "arrival_rate": 0.5454545454545454,
+          "mean_arrival_time": 24.79743349539567,
+          "mean_route_length": 31.506037392052235
+        }
+      }
+    },
+    {
+      "avoidance_gain": 1.5,
+      "commit_distance": 2.5,
+      "release_distance": 4.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.74,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.75,
+        "asymmetric": 0.7045454545454546
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 74,
+        "collisions": 22,
+        "timeouts": 4,
+        "arrival_rate": 0.74,
+        "mean_arrival_time": 25.965045048387132,
+        "mean_route_length": 34.71072002198414
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 24.02357838090696,
+          "mean_route_length": 34.43559503192868
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 33,
+          "collisions": 11,
+          "timeouts": 0,
+          "arrival_rate": 0.75,
+          "mean_arrival_time": 25.841514201306694,
+          "mean_route_length": 34.10446466109879
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 31,
+          "collisions": 9,
+          "timeouts": 4,
+          "arrival_rate": 0.7045454545454546,
+          "mean_arrival_time": 26.722825197692167,
+          "mean_route_length": 35.44483862875094
+        }
+      }
+    },
+    {
+      "avoidance_gain": 1.5,
+      "commit_distance": 2.5,
+      "release_distance": 5.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.74,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.75,
+        "asymmetric": 0.7045454545454546
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 74,
+        "collisions": 22,
+        "timeouts": 4,
+        "arrival_rate": 0.74,
+        "mean_arrival_time": 25.892462192894016,
+        "mean_route_length": 34.70922353148582
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 23.93045756992418,
+          "mean_route_length": 34.43475578607327
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 33,
+          "collisions": 11,
+          "timeouts": 0,
+          "arrival_rate": 0.75,
+          "mean_arrival_time": 25.77893847090024,
+          "mean_route_length": 34.102549946478135
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 31,
+          "collisions": 9,
+          "timeouts": 4,
+          "arrival_rate": 0.7045454545454546,
+          "mean_arrival_time": 26.646214743071212,
+          "mean_route_length": 35.443575330175456
+        }
+      }
+    },
+    {
+      "avoidance_gain": 2.0,
+      "commit_distance": 1.5,
+      "release_distance": 3.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.6,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.6136363636363636,
+        "asymmetric": 0.5227272727272727
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 60,
+        "collisions": 29,
+        "timeouts": 11,
+        "arrival_rate": 0.6,
+        "mean_arrival_time": 25.310887780392946,
+        "mean_route_length": 31.700192417039492
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 26.71098696630936,
+          "mean_route_length": 34.69677072140881
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 27,
+          "collisions": 14,
+          "timeouts": 3,
+          "arrival_rate": 0.6136363636363636,
+          "mean_arrival_time": 25.03718452120222,
+          "mean_route_length": 31.070256374097546
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 23,
+          "collisions": 13,
+          "timeouts": 8,
+          "arrival_rate": 0.5227272727272727,
+          "mean_arrival_time": 25.02345282991405,
+          "mean_route_length": 31.136822422071635
+        }
+      }
+    },
+    {
+      "avoidance_gain": 2.0,
+      "commit_distance": 1.5,
+      "release_distance": 4.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.6,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.6136363636363636,
+        "asymmetric": 0.5227272727272727
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 60,
+        "collisions": 29,
+        "timeouts": 11,
+        "arrival_rate": 0.6,
+        "mean_arrival_time": 25.310887780392946,
+        "mean_route_length": 31.700192417039492
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 26.71098696630936,
+          "mean_route_length": 34.69677072140881
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 27,
+          "collisions": 14,
+          "timeouts": 3,
+          "arrival_rate": 0.6136363636363636,
+          "mean_arrival_time": 25.03718452120222,
+          "mean_route_length": 31.070256374097546
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 23,
+          "collisions": 13,
+          "timeouts": 8,
+          "arrival_rate": 0.5227272727272727,
+          "mean_arrival_time": 25.02345282991405,
+          "mean_route_length": 31.136822422071635
+        }
+      }
+    },
+    {
+      "avoidance_gain": 2.0,
+      "commit_distance": 2.5,
+      "release_distance": 4.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.66,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.6590909090909091,
+        "asymmetric": 0.6136363636363636
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 66,
+        "collisions": 25,
+        "timeouts": 9,
+        "arrival_rate": 0.66,
+        "mean_arrival_time": 25.404796460869495,
+        "mean_route_length": 33.09266059077805
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 24.813747141045233,
+          "mean_route_length": 34.698522158627554
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 29,
+          "collisions": 13,
+          "timeouts": 2,
+          "arrival_rate": 0.6590909090909091,
+          "mean_arrival_time": 25.13439218600199,
+          "mean_route_length": 32.101037627687205
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 27,
+          "collisions": 10,
+          "timeouts": 7,
+          "arrival_rate": 0.6136363636363636,
+          "mean_arrival_time": 25.914137837513955,
+          "mean_route_length": 33.56297356304247
+        }
+      }
+    },
+    {
+      "avoidance_gain": 2.0,
+      "commit_distance": 2.5,
+      "release_distance": 5.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.68,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.6818181818181818,
+        "asymmetric": 0.6363636363636364
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 68,
+        "collisions": 24,
+        "timeouts": 8,
+        "arrival_rate": 0.68,
+        "mean_arrival_time": 25.708006803460126,
+        "mean_route_length": 33.540519111041405
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 24.732138369684485,
+          "mean_route_length": 34.699895854246996
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 30,
+          "collisions": 12,
+          "timeouts": 2,
+          "arrival_rate": 0.6818181818181818,
+          "mean_arrival_time": 25.293365889800494,
+          "mean_route_length": 32.3225914991201
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 28,
+          "collisions": 10,
+          "timeouts": 6,
+          "arrival_rate": 0.6363636363636364,
+          "mean_arrival_time": 26.50078936587246,
+          "mean_route_length": 34.43137842981223
+        }
+      }
+    },
+    {
+      "avoidance_gain": 3.0,
+      "commit_distance": 1.5,
+      "release_distance": 3.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.59,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.5909090909090909,
+        "asymmetric": 0.5227272727272727
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 59,
+        "collisions": 27,
+        "timeouts": 14,
+        "arrival_rate": 0.59,
+        "mean_arrival_time": 26.305391325233405,
+        "mean_route_length": 31.491432635203847
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 27.811403541174904,
+          "mean_route_length": 35.02980868200423
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 26,
+          "collisions": 13,
+          "timeouts": 5,
+          "arrival_rate": 0.5909090909090909,
+          "mean_arrival_time": 25.607672945223815,
+          "mean_route_length": 30.53582627552866
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 23,
+          "collisions": 12,
+          "timeouts": 9,
+          "arrival_rate": 0.5227272727272727,
+          "mean_arrival_time": 26.439328530487074,
+          "mean_route_length": 31.03325893448867
+        }
+      }
+    },
+    {
+      "avoidance_gain": 3.0,
+      "commit_distance": 1.5,
+      "release_distance": 4.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.59,
+      "by_layout_arrival_rate": {
+        "cross": 0.8333333333333334,
+        "regular": 0.5909090909090909,
+        "asymmetric": 0.5227272727272727
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 59,
+        "collisions": 27,
+        "timeouts": 14,
+        "arrival_rate": 0.59,
+        "mean_arrival_time": 26.305391325233405,
+        "mean_route_length": 31.491432635203847
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 10,
+          "collisions": 2,
+          "timeouts": 0,
+          "arrival_rate": 0.8333333333333334,
+          "mean_arrival_time": 27.811403541174904,
+          "mean_route_length": 35.02980868200423
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 26,
+          "collisions": 13,
+          "timeouts": 5,
+          "arrival_rate": 0.5909090909090909,
+          "mean_arrival_time": 25.607672945223815,
+          "mean_route_length": 30.53582627552866
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 23,
+          "collisions": 12,
+          "timeouts": 9,
+          "arrival_rate": 0.5227272727272727,
+          "mean_arrival_time": 26.439328530487074,
+          "mean_route_length": 31.03325893448867
+        }
+      }
+    },
+    {
+      "avoidance_gain": 3.0,
+      "commit_distance": 2.5,
+      "release_distance": 4.0,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.49,
+      "by_layout_arrival_rate": {
+        "cross": 0.6666666666666666,
+        "regular": 0.4772727272727273,
+        "asymmetric": 0.45454545454545453
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 49,
+        "collisions": 38,
+        "timeouts": 13,
+        "arrival_rate": 0.49,
+        "mean_arrival_time": 26.178015813013932,
+        "mean_route_length": 34.02356385868281
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 8,
+          "collisions": 4,
+          "timeouts": 0,
+          "arrival_rate": 0.6666666666666666,
+          "mean_arrival_time": 27.843569707356046,
+          "mean_route_length": 38.47472011620692
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 21,
+          "collisions": 17,
+          "timeouts": 6,
+          "arrival_rate": 0.4772727272727273,
+          "mean_arrival_time": 25.97585329057734,
+          "mean_route_length": 33.08785799495364
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 20,
+          "collisions": 17,
+          "timeouts": 7,
+          "arrival_rate": 0.45454545454545453,
+          "mean_arrival_time": 25.72406490383551,
+          "mean_route_length": 33.225592512588804
+        }
+      }
+    },
+    {
+      "avoidance_gain": 3.0,
+      "commit_distance": 2.5,
+      "release_distance": 5.5,
+      "recover_speed": 1.0,
+      "overall_arrival_rate": 0.49,
+      "by_layout_arrival_rate": {
+        "cross": 0.6666666666666666,
+        "regular": 0.4772727272727273,
+        "asymmetric": 0.45454545454545453
+      },
+      "passes_gate": false,
+      "overall": {
+        "trials": 100,
+        "arrivals": 49,
+        "collisions": 38,
+        "timeouts": 13,
+        "arrival_rate": 0.49,
+        "mean_arrival_time": 26.03087744712092,
+        "mean_route_length": 34.004134090106795
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 8,
+          "collisions": 4,
+          "timeouts": 0,
+          "arrival_rate": 0.6666666666666666,
+          "mean_arrival_time": 27.741290195838367,
+          "mean_route_length": 38.475559273862046
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 21,
+          "collisions": 17,
+          "timeouts": 6,
+          "arrival_rate": 0.4772727272727273,
+          "mean_arrival_time": 25.804427295778844,
+          "mean_route_length": 33.06344306499464
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 20,
+          "collisions": 17,
+          "timeouts": 7,
+          "arrival_rate": 0.45454545454545453,
+          "mean_arrival_time": 25.58448500654312,
+          "mean_route_length": 33.20328959297247
+        }
+      }
+    }
+  ]
+}

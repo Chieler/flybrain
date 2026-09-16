@@ -1,0 +1,149 @@
+{
+  "stage1_checkpoint": "runs/stage1/checkpoint_corrected_epg.json",
+  "stage1_checkpoint_sha256": "2294a104bceb2424c4cd949a8ff42762398f6acc3679bb6962e48c755e9536d1",
+  "training_scenarios": "runs/stage2/training.json",
+  "training_scenarios_sha256": "adf270300f9dcf552550f483848146021ab45c9cc49e7f382a865899d9caac67",
+  "heldout_scenarios": "runs/stage2/heldout.json",
+  "heldout_scenarios_sha256": "1329165ad200b216c7ec81a9aeb10839f8ae3fa697e66a68388ea2560ecd83f3",
+  "learned_parameters": [
+    "avoidance_gain",
+    "brake_distance"
+  ],
+  "avoidance_gain": 1.0,
+  "brake_distance": 6.0,
+  "selection": "max arrivals, min collisions, min timeouts, min successful route length, min gain, min distance",
+  "candidates": [
+    {
+      "avoidance_gain": 0.0,
+      "brake_distance": 2.0,
+      "trials": 24,
+      "arrivals": 1,
+      "collisions": 23,
+      "timeouts": 0,
+      "arrival_rate": 0.041666666666666664,
+      "mean_arrival_time": 9.428445425546776,
+      "mean_route_length": 17.557218096973735
+    },
+    {
+      "avoidance_gain": 0.0,
+      "brake_distance": 4.0,
+      "trials": 24,
+      "arrivals": 1,
+      "collisions": 23,
+      "timeouts": 0,
+      "arrival_rate": 0.041666666666666664,
+      "mean_arrival_time": 9.428445425546776,
+      "mean_route_length": 17.557218096973735
+    },
+    {
+      "avoidance_gain": 0.0,
+      "brake_distance": 6.0,
+      "trials": 24,
+      "arrivals": 1,
+      "collisions": 23,
+      "timeouts": 0,
+      "arrival_rate": 0.041666666666666664,
+      "mean_arrival_time": 9.428445425546776,
+      "mean_route_length": 17.557218096973735
+    },
+    {
+      "avoidance_gain": 0.25,
+      "brake_distance": 2.0,
+      "trials": 24,
+      "arrivals": 2,
+      "collisions": 22,
+      "timeouts": 0,
+      "arrival_rate": 0.08333333333333333,
+      "mean_arrival_time": 15.812336344492136,
+      "mean_route_length": 29.15188274564627
+    },
+    {
+      "avoidance_gain": 0.25,
+      "brake_distance": 4.0,
+      "trials": 24,
+      "arrivals": 2,
+      "collisions": 22,
+      "timeouts": 0,
+      "arrival_rate": 0.08333333333333333,
+      "mean_arrival_time": 15.812336344492136,
+      "mean_route_length": 29.15188274564627
+    },
+    {
+      "avoidance_gain": 0.25,
+      "brake_distance": 6.0,
+      "trials": 24,
+      "arrivals": 2,
+      "collisions": 22,
+      "timeouts": 0,
+      "arrival_rate": 0.08333333333333333,
+      "mean_arrival_time": 15.813690518986482,
+      "mean_route_length": 29.15188223111089
+    },
+    {
+      "avoidance_gain": 0.5,
+      "brake_distance": 2.0,
+      "trials": 24,
+      "arrivals": 5,
+      "collisions": 19,
+      "timeouts": 0,
+      "arrival_rate": 0.20833333333333334,
+      "mean_arrival_time": 20.958211304294657,
+      "mean_route_length": 31.221617930031208
+    },
+    {
+      "avoidance_gain": 0.5,
+      "brake_distance": 4.0,
+      "trials": 24,
+      "arrivals": 5,
+      "collisions": 19,
+      "timeouts": 0,
+      "arrival_rate": 0.20833333333333334,
+      "mean_arrival_time": 23.097247964501143,
+      "mean_route_length": 31.21916567948937
+    },
+    {
+      "avoidance_gain": 0.5,
+      "brake_distance": 6.0,
+      "trials": 24,
+      "arrivals": 5,
+      "collisions": 19,
+      "timeouts": 0,
+      "arrival_rate": 0.20833333333333334,
+      "mean_arrival_time": 26.215271911242144,
+      "mean_route_length": 31.214595766353064
+    },
+    {
+      "avoidance_gain": 1.0,
+      "brake_distance": 2.0,
+      "trials": 24,
+      "arrivals": 7,
+      "collisions": 17,
+      "timeouts": 0,
+      "arrival_rate": 0.2916666666666667,
+      "mean_arrival_time": 24.192459744679297,
+      "mean_route_length": 34.113954097281876
+    },
+    {
+      "avoidance_gain": 1.0,
+      "brake_distance": 4.0,
+      "trials": 24,
+      "arrivals": 7,
+      "collisions": 17,
+      "timeouts": 0,
+      "arrival_rate": 0.2916666666666667,
+      "mean_arrival_time": 26.144177450962363,
+      "mean_route_length": 34.10300284909155
+    },
+    {
+      "avoidance_gain": 1.0,
+      "brake_distance": 6.0,
+      "trials": 24,
+      "arrivals": 7,
+      "collisions": 17,
+      "timeouts": 0,
+      "arrival_rate": 0.2916666666666667,
+      "mean_arrival_time": 29.302942693119544,
+      "mean_route_length": 34.09357609664369
+    }
+  ]
+}
