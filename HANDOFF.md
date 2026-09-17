@@ -638,6 +638,45 @@ occur early, and/or a stronger optimizer (CMA-ES) — each its own fresh-gate
 experiment. Do **not** bolt a map/planner onto the observation-only controller,
 and do **not** advance to connectome/dopamine learning on this negative.
 
+### 2026-09-17 Stage 2e: warm-start reward fine-tuning — bounded but informative FAILURE
+
+Built the warm-start reward experiment (`stage2e.py`, `evaluate_stage2e.py`,
+`test_stage2e.py`, `runs/stage2e/`). Initialized CEM at the deterministic 2c
+readout (reproduction asserted bit-exact: recurrent 22/40 @1.106, ablation 22/40
+@1.086) and fine-tuned perturbations (`init_std=0.1`) against the same
+evaluator-only reward. Extended `cem_maximize` to track the best-ever candidate
+(`info["best"]`) + a warm-start guard (never ships worse than θ0); persists
+best-ever `W_out` + arrival/collision/timeout counts (fixing 2d's per-episode blind
+spot). Fresh gate **fully disjoint** (unlike 2d): 7/44/44 = 95, all 7 remaining
+eligible cross, excluding the complete corrected prior + spent 2d gate/train +
+fitness set (asserted). sha `5b5e24b6cab8368b…`.
+
+**One-shot gate (`runs/stage2e/gate_results.json`):** recurrent **0.516**
+(cross 4/7, regular 0.455, asym 0.568), ablation **0.400** (cross 4/7, regular
+0.364, asym 0.409). Both **FAIL** 0.90/0.80. References: waypoint 1.00, SM 0.62,
+2c 0.57, **2d 0.00**.
+
+**What it establishes.** (1) Warm start fixed the 2d bootstrap failure decisively:
+recurrent 0.00 → 0.516 on a fresh gate, **zero timeouts** (the policy drives
+purposefully, no longer sits still) — confirming 2d's 0% was an optimization
+artifact, not the interface. (2) **Recurrent beat its ablation** (0.516 vs 0.400;
+gap in the well-sampled regular +0.09 and asym +0.16 strata, cross tied) — the
+first clear memory advantage in the Stage 2 line, but a **hint, not a verdict**:
+only a pass is conclusive, and a gap between two failing policies can still be
+capacity/optimization. (3) Neither clears the gate → still bounded/confounded, NOT
+an interface verdict. Gap-to-pass is diagnosable and points at
+optimization/generalization: collisions dominate misses (recurrent 46/95); a
+train→gate generalization gap (65% on the 40 fitness scenarios → 51.6% on the fresh
+gate); and reward≠arrival-rate (the ablation's CEM raised reward while arrivals
+*fell* 22→18). Full write-up: `runs/stage2e/README.md`.
+
+**Next probes (not yet approved), aimed at the diagnosed gaps, each its own fresh
+gate:** more/curriculum fitness scenarios (close the generalization gap); stronger
+collision shaping and/or arrival-weighted fitness (align reward with the gate
+metric, keep shaping unfarmable); more CEM budget or CMA-ES to test whether the
+recurrent advantage widens toward a pass. Still: no map/planner on the
+observation-only controller; no connectome/dopamine learning on a failure.
+
 ## Git
 
 - `master`: Phases 1–2 slice merged.
