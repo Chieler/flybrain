@@ -34,30 +34,36 @@ memory. A failure does not implicate the observation interface on its own.
 
 ## What changes
 
-### 1. Reward aligned to the gate metric (frozen coefficients, by design)
-Same bounded-net-progress structure and evaluator-only privileged geometry as
-2d/2e (final position, never a controller input), with coefficients re-frozen so
-**fitness tracks arrival rate** and **collisions are strictly discouraged**:
+### 1. Fitness aligned to the gate metric — arrival count primary, shaping a bounded tie-breaker
+The gate metric is arrival rate, so 2f makes **arrival count the primary CEM
+objective** and demotes the bounded-net-progress shaping (evaluator-only privileged
+geometry, final position, never a controller input) to a **strictly bounded
+tie-breaker that can never outweigh a single arrival**:
 
 ```
-progress = clip((d0 - d_final)/d0, -1, 1)
-R = 4.0·[arrival] + 0.5·progress - 2.0·[collision] - 0.1·(elapsed/MAX_SIM_TIME)
+progress   = clip((d0 - d_final)/d0, -1, 1)
+secondary  = 0.5·progress - 2.0·[collision] - 0.1·(elapsed/MAX_SIM_TIME)   # per episode
+fitness(θ) = arrivals(θ) + mean_over_episodes(secondary) / 4.0
 ```
 
-Coefficients `W_arrive=4.0, W_progress=0.5, W_collide=2.0, W_time=0.1`, frozen
-before training (documented, **not** tuned on the gate). The design intent, all
-asserted as tests:
+`arrivals(θ)` is the integer count of arrivals over the fitness set. Per episode
+`secondary ∈ [0.5·(−1) − 2.0 − 0.1, 0.5·1] = [−2.6, 0.5]`, so its
+mean-then-÷4 contribution lies in `[−0.65, 0.125]` — a total swing of `0.775 < 1`.
+**One additional arrival (a whole +1) therefore always beats any shaping
+difference.** This directly fixes the 2e failure the user demonstrated: under a
+plain weighted-sum reward the *actual* 2e policies score warm-start 22-arrival =
+**1.555** < 2e-best 18-arrival = **1.686** — the optimizer prefers *fewer*
+arrivals, and raising `W_collide` only reinforces the collision→timeout trade that
+caused the misalignment. Under arrival-primary fitness, 22 > 18 unconditionally.
 
-- **Arrival dominates 8:1.** Max non-arrival shaping is `W_progress·1 = 0.5`;
-  arrival adds `4.0`. The optimizer cannot trade an arrival for progress — closing
-  the 2e reward/metric gap that let the ablation raise reward while arrivals fell.
-- **Strict outcome ordering:** collision (≤ `0.5 − 2.0 − 0.1 = −1.6`) < standing
-  still (progress 0, timeout ⇒ `−0.1`) < meaningful forward progress without
-  arrival (progress 0.5, timeout ⇒ `+0.15`) < arrival (≥ `4.0 − 0.1`). Crashing is
-  now strictly worse than making progress and stopping — targeting the 46/95
-  collisions.
-- **Bounded and unfarmable** (final position, clipped net progress); **standing
-  still dominated** by forward progress.
+Shaping coefficients `W_progress=0.5, W_collide=2.0, W_time=0.1`, frozen before
+training (chosen from Stage 2e *results*, **not** tuned on the Stage 2f gate). At a
+fixed arrival count they order the tie-break: collision (`≤ 0.5 − 2.0 = −1.5`) <
+standing still (progress 0 ⇒ `≈ −0.1` from time) < forward progress without arrival
+(progress 0.5 ⇒ `+0.15`), so among equal-arrival policies the search prefers fewer
+collisions and more progress — targeting the 46/95 collisions without ever trading
+an arrival away. Bounded and unfarmable (final position, clipped net progress);
+standing still dominated by forward progress. All asserted as tests.
 
 ### 2. More fitness scenarios (close the generalization gap)
 Optimize against a larger stratified fitness set — **86 scenarios (6 cross / 40
@@ -70,14 +76,17 @@ stationary objective and the run deterministic.)
 - **Warm start** at the deterministic 2c readout (2e proved it essential);
   reproduction asserted before optimizing — **arrivals == 22** for both models on
   the fixed 2d-40 reference set (a coefficient-independent reconstruction
-  fingerprint; the reward *value* changes under the new coefficients and is
-  informational only).
+  fingerprint). Additionally **persist each model's warm-start outcomes (arrivals /
+  collisions / timeouts and the fitness value) on the new 86-scenario fitness set** —
+  the actual θ₀ baseline the CEM improves over — not only the 40-scenario
+  reconstruction check.
 - **Frozen 2c-winner reservoir** (n=64, sr=0.8, leak=0.5, in=1.0, seed=0), 150
   readout params; matched memoryless ablation; **CEM with best-ever tracking + the
   warm-start guard** (never ships worse than θ₀), `init_std=0.1`, `population=64`,
-  `n_iter=25`, identical seeds for both models. Timing smoke first; the 86-scenario
-  fitness set roughly doubles per-eval cost — reduce `n_iter` **only** on a timing
-  spike, never on training results, never by inspecting the gate.
+  `n_iter=25`, identical seeds for both models. The 86-scenario fitness set roughly
+  doubles per-eval cost, but **`n_iter=25` is retained unconditionally** — no
+  timing-driven budget adjustment, removing all pre-run discretion. A timing smoke
+  runs first for reporting only, never to change the budget.
 
 ## Fresh gate — with an expanded cross stratum
 
@@ -91,18 +100,22 @@ cross is adding non-cardinal start headings.**
 **Expansion (cross only):** add the four diagonal headings (`±π/4, ±3π/4`) to cross
 generation, keeping `dist ≥ 12` (so route *lengths* stay in the same regime — only
 initial orientation changes) and the outward-road-end filter. To keep the gate
-**fair**, filter the expanded cross to **waypoint-solvable** scenarios (the
-privileged witness arrives) — necessary because diagonal starts include
-witness-unsolvable configurations. This yields **48 fresh, solvable** diagonal-cross
-scenarios (verified). Regular and asymmetric generation is **unchanged**
-(`generate_stage2b_split`, cardinal headings, outward filter) — they remain
-directly comparable to prior stages; only cross changes.
+**fair**, filter the expanded cross to **waypoint-witnessed** scenarios (the
+privileged waypoint witness arrives) — necessary because diagonal starts include
+configurations the witness cannot solve. This yields **48 fresh, waypoint-witnessed**
+diagonal-cross scenarios (verified: 80 raw fresh diagonal-cross, 48 witness
+successes, exactly 12 per diagonal heading). **Waypoint-witnessed is a positive
+filter, not a solvability claim** — witness *failure* never proves a scenario is
+unsolvable, only that this particular witness did not solve it. Regular and
+asymmetric generation is **unchanged** (`generate_stage2b_split`, cardinal headings,
+outward filter) — they remain directly comparable to prior stages; only cross
+changes.
 
 **Documented consequence:** the 2f cross stratum uses diagonal start orientations
-and is solvability-filtered, so **cross is not orientation-comparable to prior
-stages** and cross trend lines across stages are invalid. It is still a real
-one-shot test of solvable cross scenarios. Regular and asymmetric remain
-trend-comparable.
+and is witness-filtered, so **cross is not orientation-comparable to prior stages**
+and cross trend lines across stages are invalid. It is still a real one-shot test
+over the diagonal, waypoint-witnessed eligible stratum, and any pass conclusion is
+scoped to exactly that stratum. Regular and asymmetric remain trend-comparable.
 
 **Predeclared counts** (fresh, exact-identity disjoint from the complete corrected
 prior set + spent 2d gate/train + spent 2e gate + the fitness split + the 2d-40
@@ -118,22 +131,39 @@ loudly) that the gate shares no `_scenario_key` with any excluded split or the
 fitness split. Freeze both to `runs/stage2f/`; record sha256 of them and every
 excluded split.
 
+**Preregistration (frozen before any run, all in `evaluate_stage2f.py`):**
+
+- **Generation order:** the **fitness split is generated first** with
+  `STAGE2F_FITNESS_SEED = 60`; the **gate split is generated second** with
+  `STAGE2F_GATE_SEED = 61`, passing the frozen fitness split into its exclusion set
+  so the gate is disjoint from fitness **by construction** (then re-asserted on
+  `_scenario_key`). The same order holds per stratum (cross via
+  `generate_expanded_cross`, regular/asym via `generate_stage2b_split`).
+- **CEM budget (both models, identical):** `population=64, n_iter=25,
+  elite_frac=0.20, init_std=0.1, std_floor=0.001, seed=0`. `n_iter=25` fixed
+  unconditionally — no timing-driven fallback; the timing smoke reports only.
+- **Warm start:** deterministic 2c-winner readout; reproduction gate `arrivals==22`
+  on the fixed 2d-40 reference set asserted before optimizing.
+
 ## Selection discipline: none — fixed config, frozen coefficients, one-shot gate
 
-No hyperparameter/config selection, no train/val split, no coefficient tuning on
-data. Coefficients are frozen by design; the reservoir is frozen; the warm start is
-deterministic. Train `W_out` by warm-start CEM on the 86 fitness scenarios, once
+No hyperparameter/config selection, no train/val split, and **no coefficient tuning
+on the Stage 2f gate** — the shaping coefficients were chosen from Stage 2e results
+and then frozen; they are never adjusted using the 2f gate or the 2f fitness set.
+The reservoir is frozen; the warm start is deterministic. Train `W_out` by warm-start CEM on the 86 fitness scenarios, once
 for recurrent and once for ablation (identical seeds/budget), and evaluate the
-frozen gate **once** for each. The only permitted pre-run adjustment is a budget
-reduction driven solely by the timing smoke.
+frozen gate **once** for each. No pre-run adjustments: the CEM budget is fixed
+(`n_iter=25`), and the timing smoke is reporting-only.
 
 ## Interpretation (bounded, baked into the output)
 
 - **Recurrent passes AND beats ablation (> 0.02)** → aligned reward, fine-tuning
   temporal memory over the observation interface, clears a fresh gate and memory
-  carries the advantage. The interface is not the bottleneck; motivates the
-  biologically grounded memory/action-selection work (dopamine as
-  modulation/teaching, **never** goal bearing).
+  carries the advantage. **Scoped conclusion:** on this diagonal, waypoint-witnessed
+  cross stratum plus the cardinal regular/asym strata, the observation interface is
+  not the bottleneck — not a claim about cross scenarios outside the witnessed
+  eligible set. Motivates the biologically grounded memory/action-selection work
+  (dopamine as modulation/teaching, **never** goal bearing).
 - **Recurrent passes, ablation also passes** → aligned reward exploited the
   reactive policy state; the interface is sufficient and memory is not required.
 - **Both fail** → bounded and confounded between reward alignment and scenario
@@ -143,24 +173,30 @@ reduction driven solely by the timing smoke.
 
 ## Files
 
-- `stage2f.py` — aligned reward coefficients + `episode_reward_aligned(scenario,
-  result)` (same bounded structure as `stage2d.episode_reward`, new coefficients).
+- `stage2f.py` — `episode_secondary(scenario, result)` (bounded per-episode shaping
+  `0.5·progress − 2.0·[collision] − 0.1·time_frac`, same structure as
+  `stage2d.episode_reward`) and `aligned_fitness(esn, scenarios, layouts)` =
+  `arrivals + mean(episode_secondary)/4.0`.
 - Extend `stage2e.{evaluate_policy, train_readout_by_reward_warmstart}` to accept a
-  `reward_fn` (default `stage2d.episode_reward`, so 2e semantics are unchanged); 2f
-  passes `episode_reward_aligned`.
+  `fitness_fn(esn, scenarios, layouts) → float` (default the 2e mean-episode-reward,
+  so 2e semantics are unchanged); 2f passes `aligned_fitness`.
 - `evaluate_stage2f.py` — `generate_expanded_cross(seed, exclude, count)` (diagonal
-  headings, dist≥12, outward-filtered, witness-solvable, exclusion-disjoint);
-  build/freeze the fresh gate (expanded cross + `generate_stage2b_split` regular/
-  asym) and the 86-scenario fitness split, assert disjoint; reproduction assertion
-  (arrivals==22); timing smoke; warm-start CEM with the aligned reward for both
-  models; one-shot gate; persist best-ever `W_out` + arrival/collision/timeout
-  counts; provenance sha256; write `runs/stage2f/{results,gate_results}.json`.
-- `test_stage2f.py` (TDD) — aligned reward ordering (collision < standing-still <
-  forward-progress < arrival; arrival dominates 8:1; bounded; unfarmable via final
-  position); expanded cross are all cross / diagonal-heading / witness-solvable /
-  fresh; gate + fitness exact-identity disjoint from all priors + spent 2d/2e + each
-  other (100 / 86, all cross diagonal); warm-start reproduces 22/40; the trainer
-  uses the aligned reward.
+  headings, dist≥12, outward-filtered, **waypoint-witnessed**, exclusion-disjoint);
+  frozen seeds `STAGE2F_FITNESS_SEED=60`/`STAGE2F_GATE_SEED=61`, fitness built first
+  then gate excluding it; build/freeze the fresh gate (expanded cross +
+  `generate_stage2b_split` regular/asym) and the 86-scenario fitness split, assert
+  disjoint; reproduction assertion (arrivals==22) **plus persisted warm-start
+  outcomes on the 86-scenario set**; timing smoke (report-only); warm-start CEM
+  (`n_iter=25` fixed) with `aligned_fitness` for both models; one-shot gate; persist
+  best-ever `W_out` + arrival/collision/timeout counts; provenance sha256; write
+  `runs/stage2f/{results,gate_results}.json`.
+- `test_stage2f.py` (TDD) — **arrival-primary fitness** (one more arrival always
+  wins: secondary swing < 1; among equal-arrival policies collision < standing-still
+  < forward-progress; bounded; unfarmable via final position); expanded cross are all
+  cross / diagonal-heading / waypoint-witnessed / fresh; gate + fitness
+  exact-identity disjoint from all priors + spent 2d/2e + each other (100 / 86, all
+  cross diagonal); gate built from a seed that excludes the frozen fitness split;
+  warm-start reproduces 22/40; the trainer uses `aligned_fitness`.
 - `runs/stage2f/{gate_split,fitness_split,results,gate_results}.json` + `README.md`.
 
 Does **not** touch the connectome or the frozen Stage 2/2b/2c/2d/2e artifacts; no
