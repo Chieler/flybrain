@@ -100,13 +100,13 @@ def train_readout_by_reward_warmstart(esn, theta0, fitness_scenarios, layouts,
     Stage 2e mean episode reward). Uses the BEST-EVER candidate with a warm-start
     guard (never ships worse than theta0). Records the warm-start outcomes on the
     fitness set and the trained policy's outcomes. Returns `(esn, info)`."""
-    fitness_fn = fitness_fn or _mean_episode_reward
+    _fitness_fn = fitness_fn or _mean_episode_reward
     theta0 = np.asarray(theta0, dtype=float)
     d = theta0.size // 2
 
     def fitness(theta: np.ndarray) -> float:
         esn.W_out = theta.reshape(2, d)
-        return fitness_fn(esn, fitness_scenarios, layouts)
+        return _fitness_fn(esn, fitness_scenarios, layouts)
 
     f0 = fitness(theta0)   # warm-start fitness -- never ship worse than this
     warmstart_outcomes = evaluate_policy(esn, fitness_scenarios, layouts, fitness_fn)

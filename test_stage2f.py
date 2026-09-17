@@ -82,3 +82,17 @@ class TestPluggableFitness(unittest.TestCase):
         # aligned fitness >= arrivals - 1 (secondary contribution is > -1)
         self.assertGreater(info["warmstart_fitness"],
                            info["warmstart_outcomes"]["arrivals"] - 1.0)
+
+    def test_default_path_outcome_dicts_have_no_fitness_key(self):
+        # Regression: ensure the default path (fitness_fn=None) preserves 2e shape
+        # with no "fitness" key in outcome dicts, even though we coalesce the fitness
+        # function internally for the CEM objective.
+        layouts = initial_layouts()
+        fitness = select_fitness_scenarios(
+            load_scenarios("runs/stage2d/train_split.json"))[:6]
+        esn, theta0 = warm_start_readout(True, layouts)
+        esn, info = train_readout_by_reward_warmstart(
+            esn, theta0, fitness, layouts, CEMConfig(population=6, n_iter=2, seed=0))
+        # no fitness_fn -> default path; both outcome dicts must remain 2e-shaped
+        self.assertNotIn("fitness", info["warmstart_outcomes"])
+        self.assertNotIn("fitness", info["best_outcomes"])
