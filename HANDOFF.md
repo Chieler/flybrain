@@ -593,6 +593,39 @@ reward-trained *failure* stays confounded (capacity/optimization/observation),
 so only a *pass* is conclusive for that controller family. Dopamine, when it
 enters, is a teaching/modulatory signal — **never** goal bearing.
 
+### 2026-09-16 Stage 2d: reward-trained baseline run — bounded, confounded FAILURE
+
+Built the reward-trained same-observation baseline (`stage2d.py`,
+`evaluate_stage2d.py`, `test_stage2d.py`, `runs/stage2d/`). Changed **exactly one
+variable** versus 2c: the training signal. Reservoir frozen to the 2c winner
+(n=64, sr=0.8, leak=0.5, in=1.0, seed=0 → 150 readout params); only `W_out`
+optimized, by CEM (pure NumPy), against an **evaluator-only** bounded-net-progress
+reward (`clip((d0−d_final)/d0,−1,1)` + arrival − collision − time; frozen coeffs
+`2.0/1.0/1.0/0.2`, arrival dominates max shaping). No config grid, no train/val
+selection. Fresh disjoint gate frozen **before** the run.
+
+**One-shot gate (`runs/stage2d/gate_results.json`, gate split sha256
+`4d52f440892e84f9…`):** recurrent **0.00**, memoryless ablation **0.00** (all
+strata 0.00). Both **FAIL**. References: waypoint 1.00, SM 0.62, 2c recurrent 0.57.
+
+**Diagnosis — optimizer, not interface.** CEM best fitness plateaus at ≈ −0.18 for
+both models (the no-net-progress timeout floor ≈ −0.20); neither run ever entered
+the arrival regime (an arrival contributes +2.0, none appeared). From `μ=0`,
+reward-from-scratch is far sparser than 2c's dense imitation targets, so the
+arrival term never got a gradient and the search converged to cautious
+near-stillness. Recurrent (−0.1789) vs ablation (−0.1752) are indistinguishable,
+but with both stuck at the floor that says nothing about memory. **Bounded
+conclusion:** this rules out *this from-scratch reward-training setup*; per the
+pass-only-is-conclusive asymmetry it does **not** implicate the interface and does
+**not** rule out route memory. The memory question is still open. Full write-up:
+`runs/stage2d/README.md`.
+
+**Next probes (not yet run/approved) target optimization, not the interface:**
+warm-start from the 2c imitation readout, denser/curriculum shaping so arrivals
+occur early, and/or a stronger optimizer (CMA-ES) — each its own fresh-gate
+experiment. Do **not** bolt a map/planner onto the observation-only controller,
+and do **not** advance to connectome/dopamine learning on this negative.
+
 ## Git
 
 - `master`: Phases 1–2 slice merged.

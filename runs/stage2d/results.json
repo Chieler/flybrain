@@ -1,0 +1,395 @@
+{
+  "gate_split": "runs/stage2d/gate_split.json",
+  "train_split": "runs/stage2d/train_split.json",
+  "provenance_sha256": {
+    "runs/stage2/dev_split.json": "1a3682705aa39d9d2d4acb5c3bd8465f3f1276064fceadc587395e302bb2c3db",
+    "runs/stage2b/gate_split.json": "3f7863a68261f5ee031054b528d3a56937ae663a06bcfcb73e49c28ccf907e8f",
+    "runs/stage2b/sm_train_split.json": "8df212c4b270059177f98f23664125a7484991518029710e3408c07e1de9a86f",
+    "runs/stage2d/gate_split.json": "4d52f440892e84f9513d684961df1957099d558e6054cb2c501c597d13ae6cbf",
+    "runs/stage2d/train_split.json": "377629e07f01a92f061ba8bbebd4776c4fccd25a7fc9ec49a7ac95f400b213d0"
+  },
+  "gate": {
+    "overall_rate": 0.9,
+    "per_layout_rate": 0.8
+  },
+  "reservoir_config": {
+    "n_reservoir": 64,
+    "spectral_radius": 0.8,
+    "leak": 0.5,
+    "input_scale": 1.0
+  },
+  "esn_seed": 0,
+  "cem_budget": {
+    "population": 64,
+    "n_iter": 25,
+    "elite_frac": 0.2,
+    "init_std": 0.5,
+    "std_floor": 0.001,
+    "seed": 0
+  },
+  "fitness_strata": {
+    "cross": 4,
+    "regular": 18,
+    "asymmetric": 18
+  },
+  "recurrent": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.0,
+    "by_layout_arrival_rate": {
+      "cross": 0.0,
+      "regular": 0.0,
+      "asymmetric": 0.0
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 0,
+        "collisions": 2,
+        "timeouts": 98,
+        "arrival_rate": 0.0,
+        "mean_arrival_time": null,
+        "mean_route_length": null
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 12,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 2,
+          "timeouts": 42,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 44,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        }
+      }
+    },
+    "train_final_mu_fitness": -0.1789283814072842
+  },
+  "memoryless_ablation": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.0,
+    "by_layout_arrival_rate": {
+      "cross": 0.0,
+      "regular": 0.0,
+      "asymmetric": 0.0
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 0,
+        "collisions": 1,
+        "timeouts": 99,
+        "arrival_rate": 0.0,
+        "mean_arrival_time": null,
+        "mean_route_length": null
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 12,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 1,
+          "timeouts": 43,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 44,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        }
+      }
+    },
+    "train_final_mu_fitness": -0.1751810550080675
+  },
+  "references": {
+    "waypoint_witness": 1.0,
+    "state_machine": 0.62,
+    "stage2c_recurrent": 0.57
+  },
+  "interpretation": "Recurrent 0.000 vs memoryless ablation 0.000 (references: waypoint witness 1.00, Stage 2b SM 0.62, Stage 2c recurrent 0.57). The reward-trained recurrent baseline does not clear the gate. Per the pass-only-is-conclusive asymmetry this stays confounded between optimization budget, capacity, and observation limits -- it does not implicate the interface on its own; diagnose before any interface claim or dopamine/connectome learning.",
+  "recurrent_train_history": [
+    {
+      "iter": 0,
+      "best": -0.19587262976993763,
+      "mean": -0.41550970768865036
+    },
+    {
+      "iter": 1,
+      "best": -0.13447496062216438,
+      "mean": -0.26690422111704737
+    },
+    {
+      "iter": 2,
+      "best": -0.18945050598740712,
+      "mean": -0.24054257258268172
+    },
+    {
+      "iter": 3,
+      "best": -0.1893370714527266,
+      "mean": -0.230095347492295
+    },
+    {
+      "iter": 4,
+      "best": -0.1766566042892967,
+      "mean": -0.20943375251799884
+    },
+    {
+      "iter": 5,
+      "best": -0.18876804460651814,
+      "mean": -0.22012448061109502
+    },
+    {
+      "iter": 6,
+      "best": -0.1874924230251294,
+      "mean": -0.23720344465655477
+    },
+    {
+      "iter": 7,
+      "best": -0.17792815473976606,
+      "mean": -0.2141268250423874
+    },
+    {
+      "iter": 8,
+      "best": -0.17451605339232446,
+      "mean": -0.21664814794414453
+    },
+    {
+      "iter": 9,
+      "best": -0.1531618143657518,
+      "mean": -0.21402047412295855
+    },
+    {
+      "iter": 10,
+      "best": -0.17937349409380984,
+      "mean": -0.19782023886630262
+    },
+    {
+      "iter": 11,
+      "best": -0.18004533365191677,
+      "mean": -0.2118773790204636
+    },
+    {
+      "iter": 12,
+      "best": -0.17914860924572457,
+      "mean": -0.20167949721013656
+    },
+    {
+      "iter": 13,
+      "best": -0.18034777241917513,
+      "mean": -0.19775220114369144
+    },
+    {
+      "iter": 14,
+      "best": -0.17983880523907186,
+      "mean": -0.19963216193132907
+    },
+    {
+      "iter": 15,
+      "best": -0.17953863486581753,
+      "mean": -0.1981396842099617
+    },
+    {
+      "iter": 16,
+      "best": -0.17993364682688928,
+      "mean": -0.1937392569242803
+    },
+    {
+      "iter": 17,
+      "best": -0.17941786117630015,
+      "mean": -0.18932460575487178
+    },
+    {
+      "iter": 18,
+      "best": -0.1789762006064354,
+      "mean": -0.1875059320106814
+    },
+    {
+      "iter": 19,
+      "best": -0.17896796448608193,
+      "mean": -0.1935955823271196
+    },
+    {
+      "iter": 20,
+      "best": -0.1793686336935219,
+      "mean": -0.18800480322462065
+    },
+    {
+      "iter": 21,
+      "best": -0.17880281793525993,
+      "mean": -0.18648193329280635
+    },
+    {
+      "iter": 22,
+      "best": -0.17864645604479945,
+      "mean": -0.18739910704361457
+    },
+    {
+      "iter": 23,
+      "best": -0.17734040746887408,
+      "mean": -0.1901623264463866
+    },
+    {
+      "iter": 24,
+      "best": -0.17864254424881426,
+      "mean": -0.18715353356916334
+    }
+  ],
+  "ablation_train_history": [
+    {
+      "iter": 0,
+      "best": -0.1876564836253341,
+      "mean": -0.408242332402062
+    },
+    {
+      "iter": 1,
+      "best": -0.19094535719029923,
+      "mean": -0.2542327938616463
+    },
+    {
+      "iter": 2,
+      "best": -0.19473315235579416,
+      "mean": -0.2301164893980263
+    },
+    {
+      "iter": 3,
+      "best": -0.19631566182948076,
+      "mean": -0.21912169331069214
+    },
+    {
+      "iter": 4,
+      "best": -0.19217961717588108,
+      "mean": -0.21643560425596423
+    },
+    {
+      "iter": 5,
+      "best": -0.18795991576764087,
+      "mean": -0.20558437703015287
+    },
+    {
+      "iter": 6,
+      "best": -0.1874446099989751,
+      "mean": -0.21061051658568009
+    },
+    {
+      "iter": 7,
+      "best": -0.18353763423900563,
+      "mean": -0.2016294407535461
+    },
+    {
+      "iter": 8,
+      "best": -0.18586006342989206,
+      "mean": -0.20595147459889648
+    },
+    {
+      "iter": 9,
+      "best": -0.18488235186576654,
+      "mean": -0.2001463532087818
+    },
+    {
+      "iter": 10,
+      "best": -0.1837199328086442,
+      "mean": -0.19932341824848965
+    },
+    {
+      "iter": 11,
+      "best": -0.18293776994667693,
+      "mean": -0.19738663285760738
+    },
+    {
+      "iter": 12,
+      "best": -0.18287343285420773,
+      "mean": -0.19923696102044403
+    },
+    {
+      "iter": 13,
+      "best": -0.1806548191802596,
+      "mean": -0.19789336126648682
+    },
+    {
+      "iter": 14,
+      "best": -0.18170284312823676,
+      "mean": -0.19332163557476495
+    },
+    {
+      "iter": 15,
+      "best": -0.17961312943942914,
+      "mean": -0.18949140807131304
+    },
+    {
+      "iter": 16,
+      "best": -0.17814803535471185,
+      "mean": -0.19187311108765143
+    },
+    {
+      "iter": 17,
+      "best": -0.17834951309837582,
+      "mean": -0.18984497321806845
+    },
+    {
+      "iter": 18,
+      "best": -0.17769544083384464,
+      "mean": -0.19101573951489975
+    },
+    {
+      "iter": 19,
+      "best": -0.1787748551831862,
+      "mean": -0.18774188580514653
+    },
+    {
+      "iter": 20,
+      "best": -0.17937186131907143,
+      "mean": -0.18938992120187215
+    },
+    {
+      "iter": 21,
+      "best": -0.17830115362337423,
+      "mean": -0.1909150590933788
+    },
+    {
+      "iter": 22,
+      "best": -0.17467690544877015,
+      "mean": -0.18535573776835124
+    },
+    {
+      "iter": 23,
+      "best": -0.17471966323897317,
+      "mean": -0.18880011387193005
+    },
+    {
+      "iter": 24,
+      "best": -0.17585384544219018,
+      "mean": -0.18981159062842168
+    }
+  ]
+}

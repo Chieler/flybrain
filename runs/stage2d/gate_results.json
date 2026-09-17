@@ -1,0 +1,141 @@
+{
+  "gate_split": "runs/stage2d/gate_split.json",
+  "train_split": "runs/stage2d/train_split.json",
+  "provenance_sha256": {
+    "runs/stage2/dev_split.json": "1a3682705aa39d9d2d4acb5c3bd8465f3f1276064fceadc587395e302bb2c3db",
+    "runs/stage2b/gate_split.json": "3f7863a68261f5ee031054b528d3a56937ae663a06bcfcb73e49c28ccf907e8f",
+    "runs/stage2b/sm_train_split.json": "8df212c4b270059177f98f23664125a7484991518029710e3408c07e1de9a86f",
+    "runs/stage2d/gate_split.json": "4d52f440892e84f9513d684961df1957099d558e6054cb2c501c597d13ae6cbf",
+    "runs/stage2d/train_split.json": "377629e07f01a92f061ba8bbebd4776c4fccd25a7fc9ec49a7ac95f400b213d0"
+  },
+  "gate": {
+    "overall_rate": 0.9,
+    "per_layout_rate": 0.8
+  },
+  "reservoir_config": {
+    "n_reservoir": 64,
+    "spectral_radius": 0.8,
+    "leak": 0.5,
+    "input_scale": 1.0
+  },
+  "esn_seed": 0,
+  "cem_budget": {
+    "population": 64,
+    "n_iter": 25,
+    "elite_frac": 0.2,
+    "init_std": 0.5,
+    "std_floor": 0.001,
+    "seed": 0
+  },
+  "fitness_strata": {
+    "cross": 4,
+    "regular": 18,
+    "asymmetric": 18
+  },
+  "recurrent": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.0,
+    "by_layout_arrival_rate": {
+      "cross": 0.0,
+      "regular": 0.0,
+      "asymmetric": 0.0
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 0,
+        "collisions": 2,
+        "timeouts": 98,
+        "arrival_rate": 0.0,
+        "mean_arrival_time": null,
+        "mean_route_length": null
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 12,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 2,
+          "timeouts": 42,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 44,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        }
+      }
+    },
+    "train_final_mu_fitness": -0.1789283814072842
+  },
+  "memoryless_ablation": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.0,
+    "by_layout_arrival_rate": {
+      "cross": 0.0,
+      "regular": 0.0,
+      "asymmetric": 0.0
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 0,
+        "collisions": 1,
+        "timeouts": 99,
+        "arrival_rate": 0.0,
+        "mean_arrival_time": null,
+        "mean_route_length": null
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 12,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 1,
+          "timeouts": 43,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 0,
+          "collisions": 0,
+          "timeouts": 44,
+          "arrival_rate": 0.0,
+          "mean_arrival_time": null,
+          "mean_route_length": null
+        }
+      }
+    },
+    "train_final_mu_fitness": -0.1751810550080675
+  },
+  "references": {
+    "waypoint_witness": 1.0,
+    "state_machine": 0.62,
+    "stage2c_recurrent": 0.57
+  },
+  "interpretation": "Recurrent 0.000 vs memoryless ablation 0.000 (references: waypoint witness 1.00, Stage 2b SM 0.62, Stage 2c recurrent 0.57). The reward-trained recurrent baseline does not clear the gate. Per the pass-only-is-conclusive asymmetry this stays confounded between optimization budget, capacity, and observation limits -- it does not implicate the interface on its own; diagnose before any interface claim or dopamine/connectome learning."
+}
