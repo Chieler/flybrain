@@ -89,27 +89,37 @@ class CEMConfig:
     seed: int = 0
 
 
-def cem_maximize(fitness_fn, dim: int, cfg: CEMConfig):
+def cem_maximize(fitness_fn, dim: int, cfg: CEMConfig, init_mu=None):
     """Maximize `fitness_fn` over R^dim by CEM with diagonal covariance.
 
-    Deterministic given `cfg.seed`. Returns `(mu, info)` where `mu` is the final
-    elite mean and `info["history"]` records per-iteration best/mean fitness.
+    Deterministic given `cfg.seed`. `init_mu` seeds the search mean (default: the
+    zero vector -- the from-scratch case; Stage 2e passes a warm start). Returns
+    `(mu, info)` where `mu` is the final elite mean, `info["history"]` records
+    per-iteration best/mean fitness, and `info["best"]` is the BEST-EVER sampled
+    candidate seen across all iterations: `{"theta", "fitness", "iter"}`. Prefer
+    `info["best"]["theta"]` over `mu` -- the final elite mean is not guaranteed to
+    be the best candidate evaluated.
     """
     rng = np.random.default_rng(cfg.seed)
-    mu = np.zeros(dim)
+    mu = np.zeros(dim) if init_mu is None else np.array(init_mu, dtype=float)
     sigma = np.full(dim, cfg.init_std)
     n_elite = max(1, int(round(cfg.population * cfg.elite_frac)))
     history = []
+    best = {"theta": None, "fitness": -np.inf, "iter": -1}
     for it in range(cfg.n_iter):
         samples = rng.normal(mu, sigma, size=(cfg.population, dim))
         scores = np.array([fitness_fn(s) for s in samples])
+        i_best = int(np.argmax(scores))
+        if float(scores[i_best]) > best["fitness"]:
+            best = {"theta": samples[i_best].copy(),
+                    "fitness": float(scores[i_best]), "iter": it}
         elite_idx = np.argsort(scores)[-n_elite:]
         elites = samples[elite_idx]
         mu = elites.mean(axis=0)
         sigma = np.maximum(elites.std(axis=0), cfg.std_floor)
         history.append({"iter": it, "best": float(scores.max()),
                         "mean": float(scores.mean())})
-    return mu, {"history": history}
+    return mu, {"history": history, "best": best}
 
 
 def make_reservoir(recurrent: bool) -> EchoStateNetwork:
