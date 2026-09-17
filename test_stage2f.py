@@ -123,3 +123,37 @@ class TestExpandedCross(unittest.TestCase):
         more = generate_expanded_cross(seed=61, exclude=first, count=6)
         self.assertTrue({_scenario_key(s) for s in first}.isdisjoint(
             {_scenario_key(s) for s in more}))
+
+
+class TestSplitBuilders(unittest.TestCase):
+    def test_fitness_and_gate_counts_and_disjointness(self):
+        from evaluate_stage2f import (
+            EXCLUDE_PATHS, build_fitness_split, build_gate_split,
+        )
+        fitness = build_fitness_split()
+        gate = build_gate_split(fitness)
+        # counts
+        self.assertEqual(len(fitness), 86)
+        self.assertEqual(len(gate), 100)
+        for split, n in ((fitness, {"cross": 6, "regular": 40, "asymmetric": 40}),
+                         (gate, {"cross": 12, "regular": 44, "asymmetric": 44})):
+            for lay, k in n.items():
+                self.assertEqual(sum(1 for s in split if s.layout == lay), k)
+        f_keys = {_scenario_key(s) for s in fitness}
+        g_keys = {_scenario_key(s) for s in gate}
+        self.assertEqual(len(f_keys), 86)
+        self.assertEqual(len(g_keys), 100)
+        self.assertTrue(f_keys.isdisjoint(g_keys))              # gate INTERSECT fitness = 0
+        # disjoint from every excluded prior/spent split
+        excl = []
+        for p in EXCLUDE_PATHS:
+            excl += load_scenarios(p)
+        e_keys = {_scenario_key(s) for s in excl}
+        self.assertTrue(f_keys.isdisjoint(e_keys))
+        self.assertTrue(g_keys.isdisjoint(e_keys))
+        # every cross scenario (both splits) uses a diagonal heading
+        from evaluate_stage2f import DIAGONAL_HEADINGS
+        diag = {round(h, 6) for h in DIAGONAL_HEADINGS}
+        for s in fitness + gate:
+            if s.layout == "cross":
+                self.assertIn(round(s.start.heading, 6), diag)

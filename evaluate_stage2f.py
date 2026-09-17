@@ -47,6 +47,93 @@ from stage2f import aligned_fitness
 
 DIAGONAL_HEADINGS = (math.pi / 4, 3 * math.pi / 4, -math.pi / 4, -3 * math.pi / 4)
 
+# Complete exclusion: the corrected prior set PLUS every spent one-shot split.
+SPENT_SPLITS = [
+    "runs/stage2d/gate_split.json",
+    "runs/stage2d/train_split.json",
+    "runs/stage2e/gate_split.json",
+]
+EXCLUDE_PATHS = list(PRIOR_SPLIT_PATHS) + SPENT_SPLITS
+
+# Preregistered seeds (distinct from 2b 21/22, 2d 41/42, 2e 51). Fitness FIRST.
+STAGE2F_FITNESS_SEED = 60
+STAGE2F_GATE_SEED = 61
+FITNESS_COUNTS = {"cross": 6, "regular": 40, "asymmetric": 40}    # 86
+GATE_COUNTS = {"cross": 12, "regular": 44, "asymmetric": 44}      # 100
+
+# The 40 Stage 2d fitness scenarios -- used ONLY as the reproduction fingerprint
+# (arrivals == 22), never optimized on. Excluded from both fresh splits via
+# runs/stage2d/train_split.json in EXCLUDE_PATHS.
+REPRO_REFERENCE_SPLIT = "runs/stage2d/train_split.json"
+
+# Frozen warm-start CEM budget (identical for recurrent and ablation).
+CEM_BUDGET = CEMConfig(population=64, n_iter=25, elite_frac=0.20,
+                       init_std=0.1, seed=0)
+
+REPRO_ARRIVALS = 22
+REPRO_REWARD = {True: 1.106, False: 1.086}
+REPRO_REWARD_TOL = 0.02
+
+REF_WAYPOINT_GATE = 1.00
+REF_STATE_MACHINE_GATE = 0.62
+REF_STAGE2C_RECURRENT = 0.57
+REF_STAGE2D_RECURRENT = 0.00
+REF_STAGE2E_RECURRENT = 0.516
+
+
+def _load(paths):
+    out = []
+    for p in paths:
+        out += load_scenarios(p)
+    return out
+
+
+def _cardinal_strata(seed: int, exclude, counts: dict) -> list[StreetScenario]:
+    """Regular + asymmetric from the unchanged cardinal generator (cross count 0)."""
+    strata = dict(counts)
+    strata["cross"] = 0
+    return [s for s in generate_stage2b_split(seed, exclude=exclude, counts=strata)
+            if s.layout != "cross"]
+
+
+def build_fitness_split() -> list[StreetScenario]:
+    """Fresh 86-scenario fitness split (6 diagonal cross / 40 regular / 40 asym),
+    disjoint from the complete exclusion. Generated FIRST (seed 60)."""
+    exclude = _load(EXCLUDE_PATHS)
+    cross = generate_expanded_cross(STAGE2F_FITNESS_SEED, exclude, FITNESS_COUNTS["cross"])
+    rest = _cardinal_strata(STAGE2F_FITNESS_SEED, exclude, FITNESS_COUNTS)
+    split = cross + rest
+    _assert_disjoint(split, exclude, "fitness")
+    return split
+
+
+def build_gate_split(fitness) -> list[StreetScenario]:
+    """Fresh 100-scenario gate (12 diagonal cross / 44 regular / 44 asym), disjoint
+    from the complete exclusion AND the frozen fitness split. Generated SECOND
+    (seed 61) excluding `fitness`, so gate INTERSECT fitness = 0."""
+    exclude = _load(EXCLUDE_PATHS) + list(fitness)
+    cross = generate_expanded_cross(STAGE2F_GATE_SEED, exclude, GATE_COUNTS["cross"])
+    rest = _cardinal_strata(STAGE2F_GATE_SEED, exclude, GATE_COUNTS)
+    split = cross + rest
+    _assert_disjoint(split, exclude, "gate")
+    return split
+
+
+def _assert_disjoint(split, exclude, label: str) -> None:
+    keys = {_scenario_key(s) for s in split}
+    assert len(keys) == len(split), f"duplicate identity within {label}"
+    assert keys.isdisjoint({_scenario_key(s) for s in exclude}), \
+        f"{label} overlaps an excluded/fitness split"
+
+
+def _freeze(path: str, builder) -> list[StreetScenario]:
+    if Path(path).exists():
+        return load_scenarios(path)
+    split = builder()
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    save_scenarios(path, split)
+    return split
+
 
 def generate_expanded_cross(seed: int, exclude, count: int) -> list[StreetScenario]:
     """Fresh diagonal-heading cross scenarios, waypoint-witnessed and identity-
