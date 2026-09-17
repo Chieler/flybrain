@@ -60,9 +60,23 @@ def warm_start_readout(recurrent: bool, layouts=None):
     return esn, esn.W_out.flatten().copy()
 
 
-def evaluate_policy(esn, scenarios, layouts) -> dict:
+def _mean_episode_reward(esn, scenarios, layouts) -> float:
+    """The Stage 2e fitness: mean bounded-net-progress episode reward. Default so
+    2e semantics are unchanged when no `fitness_fn` is supplied."""
+    controller = RecurrentController(esn)
+    total = 0.0
+    for scenario in scenarios:
+        controller.reset()
+        result = run_street_episode(scenario, layouts[scenario.layout],
+                                    controller, record=True)
+        total += episode_reward(scenario, result)
+    return total / len(scenarios)
+
+
+def evaluate_policy(esn, scenarios, layouts, fitness_fn=None) -> dict:
     """Mean reward and arrival/collision/timeout counts for the policy currently
-    on `esn`, over `scenarios` (closed-loop, deterministic)."""
+    on `esn`. When `fitness_fn` is given, also report `"fitness"` (the training
+    objective's value); otherwise the 2e-shaped dict is returned unchanged."""
     controller = RecurrentController(esn)
     total = 0.0
     counts = {"arrival": 0, "collision": 0, "timeout": 0}
@@ -72,33 +86,30 @@ def evaluate_policy(esn, scenarios, layouts) -> dict:
                                     controller, record=True)
         total += episode_reward(scenario, result)
         counts[result.outcome] = counts.get(result.outcome, 0) + 1
-    return {"mean_reward": total / len(scenarios), "n": len(scenarios),
-            "arrivals": counts["arrival"], "collisions": counts["collision"],
-            "timeouts": counts["timeout"]}
+    out = {"mean_reward": total / len(scenarios), "n": len(scenarios),
+           "arrivals": counts["arrival"], "collisions": counts["collision"],
+           "timeouts": counts["timeout"]}
+    if fitness_fn is not None:
+        out["fitness"] = float(fitness_fn(esn, scenarios, layouts))
+    return out
 
 
 def train_readout_by_reward_warmstart(esn, theta0, fitness_scenarios, layouts,
-                                      cfg: CEMConfig):
-    """Fine-tune `esn.W_out` by CEM starting from `theta0`, against mean episode
-    reward over `fitness_scenarios`. Uses the BEST-EVER candidate (not the final
-    elite mean). Sets that readout on `esn` and returns `(esn, info)` where `info`
-    carries the CEM history/best plus `best_outcomes` (reward + outcome counts on
-    the fitness set for the trained policy)."""
+                                      cfg: CEMConfig, fitness_fn=None):
+    """Fine-tune `esn.W_out` by CEM from `theta0` against `fitness_fn` (default the
+    Stage 2e mean episode reward). Uses the BEST-EVER candidate with a warm-start
+    guard (never ships worse than theta0). Records the warm-start outcomes on the
+    fitness set and the trained policy's outcomes. Returns `(esn, info)`."""
+    fitness_fn = fitness_fn or _mean_episode_reward
     theta0 = np.asarray(theta0, dtype=float)
     d = theta0.size // 2
 
     def fitness(theta: np.ndarray) -> float:
         esn.W_out = theta.reshape(2, d)
-        total = 0.0
-        controller = RecurrentController(esn)
-        for scenario in fitness_scenarios:
-            controller.reset()
-            result = run_street_episode(scenario, layouts[scenario.layout],
-                                        controller, record=True)
-            total += episode_reward(scenario, result)
-        return total / len(fitness_scenarios)
+        return fitness_fn(esn, fitness_scenarios, layouts)
 
-    f0 = fitness(theta0)   # warm-start fitness -- the policy we must never ship worse than
+    f0 = fitness(theta0)   # warm-start fitness -- never ship worse than this
+    warmstart_outcomes = evaluate_policy(esn, fitness_scenarios, layouts, fitness_fn)
     _, info = cem_maximize(fitness, theta0.size, cfg, init_mu=theta0)
     if info["best"]["fitness"] >= f0:
         best_theta = np.asarray(info["best"]["theta"], dtype=float)
@@ -107,8 +118,9 @@ def train_readout_by_reward_warmstart(esn, theta0, fitness_scenarios, layouts,
         best_theta = theta0   # no perturbation beat the warm start; keep it
         info["improved_over_warmstart"] = False
     info["warmstart_fitness"] = float(f0)
+    info["warmstart_outcomes"] = warmstart_outcomes
     info["best_fitness"] = float(max(info["best"]["fitness"], f0))
     esn.W_out = best_theta.reshape(2, d)
     info["best_theta"] = best_theta.tolist()
-    info["best_outcomes"] = evaluate_policy(esn, fitness_scenarios, layouts)
+    info["best_outcomes"] = evaluate_policy(esn, fitness_scenarios, layouts, fitness_fn)
     return esn, info

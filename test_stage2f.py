@@ -10,6 +10,12 @@ from street import (
     MAX_SIM_TIME, StreetCarState, StreetEpisodeResult, StreetScenario,
     initial_layouts,
 )
+from evaluate_stage2 import load_scenarios
+from evaluate_stage2d import select_fitness_scenarios
+from stage2d import CEMConfig
+from stage2e import (
+    evaluate_policy, train_readout_by_reward_warmstart, warm_start_readout,
+)
 import stage2f
 
 
@@ -46,3 +52,33 @@ class TestEpisodeSecondary(unittest.TestCase):
         best = stage2f.episode_secondary(s, _result("arrival", (10.0, 0.0), elapsed=0.0))
         self.assertGreaterEqual(worst, -2.6 - 1e-9)
         self.assertLessEqual(best, 0.5 + 1e-9)
+
+
+class TestPluggableFitness(unittest.TestCase):
+    def test_default_matches_2e_mean_reward(self):
+        layouts = initial_layouts()
+        fitness = select_fitness_scenarios(
+            load_scenarios("runs/stage2d/train_split.json"))[:6]
+        esn, _ = warm_start_readout(True, layouts)
+        out = evaluate_policy(esn, fitness, layouts)          # no fitness_fn
+        self.assertNotIn("fitness", out)                     # 2e shape preserved
+        out2 = evaluate_policy(esn, fitness, layouts, fitness_fn=stage2f.aligned_fitness)
+        self.assertIn("fitness", out2)
+        # counts are reward-independent -> identical across the two calls
+        self.assertEqual(out["arrivals"], out2["arrivals"])
+
+    def test_trainer_uses_supplied_fitness_and_records_warmstart_outcomes(self):
+        layouts = initial_layouts()
+        fitness = select_fitness_scenarios(
+            load_scenarios("runs/stage2d/train_split.json"))[:6]
+        esn, theta0 = warm_start_readout(True, layouts)
+        esn, info = train_readout_by_reward_warmstart(
+            esn, theta0, fitness, layouts, CEMConfig(population=6, n_iter=2, seed=0),
+            fitness_fn=stage2f.aligned_fitness)
+        # warm-start guard uses the supplied (aligned) fitness
+        self.assertGreaterEqual(info["best_fitness"], info["warmstart_fitness"] - 1e-9)
+        self.assertIn("warmstart_outcomes", info)
+        self.assertEqual(info["warmstart_outcomes"]["n"], len(fitness))
+        # aligned fitness >= arrivals - 1 (secondary contribution is > -1)
+        self.assertGreater(info["warmstart_fitness"],
+                           info["warmstart_outcomes"]["arrivals"] - 1.0)
