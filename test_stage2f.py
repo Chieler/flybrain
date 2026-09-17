@@ -8,9 +8,10 @@ import numpy as np
 
 from street import (
     MAX_SIM_TIME, StreetCarState, StreetEpisodeResult, StreetScenario,
-    initial_layouts,
+    initial_layouts, run_street_episode,
 )
-from evaluate_stage2 import load_scenarios
+from evaluate_stage2 import load_scenarios, _scenario_key
+from stage2b import WaypointController, is_outward_road_end
 from evaluate_stage2d import select_fitness_scenarios
 from stage2d import CEMConfig
 from stage2e import (
@@ -96,3 +97,29 @@ class TestPluggableFitness(unittest.TestCase):
         # no fitness_fn -> default path; both outcome dicts must remain 2e-shaped
         self.assertNotIn("fitness", info["warmstart_outcomes"])
         self.assertNotIn("fitness", info["best_outcomes"])
+
+
+class TestExpandedCross(unittest.TestCase):
+    def test_all_cross_diagonal_witnessed_and_disjoint(self):
+        from evaluate_stage2f import DIAGONAL_HEADINGS, generate_expanded_cross
+        layouts = initial_layouts()
+        cross = generate_expanded_cross(seed=61, exclude=[], count=12)
+        self.assertEqual(len(cross), 12)
+        keys = {_scenario_key(s) for s in cross}
+        self.assertEqual(len(keys), 12)                         # no internal dups
+        for s in cross:
+            self.assertEqual(s.layout, "cross")
+            self.assertIn(round(s.start.heading, 6),
+                          {round(h, 6) for h in DIAGONAL_HEADINGS})
+            layout = layouts["cross"]
+            self.assertFalse(is_outward_road_end(
+                s.start.x, s.start.y, s.start.heading, layout))
+            wc = WaypointController(s, layout); wc.reset()
+            self.assertEqual(run_street_episode(s, layout, wc).outcome, "arrival")
+
+    def test_exclude_is_respected(self):
+        from evaluate_stage2f import generate_expanded_cross
+        first = generate_expanded_cross(seed=61, exclude=[], count=6)
+        more = generate_expanded_cross(seed=61, exclude=first, count=6)
+        self.assertTrue({_scenario_key(s) for s in first}.isdisjoint(
+            {_scenario_key(s) for s in more}))
