@@ -157,3 +157,20 @@ class TestSplitBuilders(unittest.TestCase):
         for s in fitness + gate:
             if s.layout == "cross":
                 self.assertIn(round(s.start.heading, 6), diag)
+
+
+class TestInterpretation(unittest.TestCase):
+    def _res(self, rate, passes):
+        return {"overall_arrival_rate": rate, "passes_gate": passes}
+
+    def test_pass_and_beats_ablation_is_scoped(self):
+        from evaluate_stage2f import _interpretation
+        msg = _interpretation(self._res(0.92, True), self._res(0.80, False))
+        self.assertIn("witnessed", msg.lower())        # scoped, not a broad claim
+        self.assertIn("dopamine", msg.lower())
+
+    def test_both_fail_is_bounded_and_confounded(self):
+        from evaluate_stage2f import _interpretation
+        msg = _interpretation(self._res(0.55, False), self._res(0.40, False))
+        self.assertIn("confounded", msg.lower())
+        self.assertNotIn("interface is not", msg.lower())
