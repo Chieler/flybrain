@@ -2,9 +2,11 @@
 
 **Verdict: bounded, confounded FAILURE. Not a clean interface verdict.**
 Both the recurrent net and its matched memoryless ablation reached **0% arrival**
-on the fresh one-shot gate. Per the pass-only-is-conclusive asymmetry declared in
-the design, this does **not** implicate the observation interface — it must be
-diagnosed before any interface claim.
+on the one-shot gate. Per the pass-only-is-conclusive asymmetry declared in the
+design, this does **not** implicate the observation interface — it must be
+diagnosed before any interface claim. (The gate has a documented disjointness
+defect — see *Provenance defect* below — that cannot fake a pass and so does not
+affect this 0% negative.)
 
 ## What this stage asked
 
@@ -40,46 +42,74 @@ machine 0.62, Stage 2c recurrent imitation 0.57.
 Recurrent: 0 arrivals, 2 collisions, 98 timeouts. Ablation: 0 arrivals, 1
 collision, 99 timeouts.
 
-## Diagnosis — why the optimizer, not the interface
+## Diagnosis — CEM-from-zero failed to bootstrap
 
-The CEM training histories (`results.json`) are the tell. Both models converge to
-a best fitness of ≈ **−0.18**, which is essentially the *no-net-progress floor*:
-a car that times out having made ≈0 net progress scores `−W_time·1 ≈ −0.20`. Mean
-population fitness falls from ≈ −0.41 at iteration 0 (random readouts drive off /
-crash / make negative net progress) to ≈ −0.19 by iteration 24. **Neither run
-ever entered the arrival regime.** A policy arriving on even a handful of the 40
-fitness scenarios would have shown fitness well above 0 (each arrival contributes
-+2.0); nothing close to that appears in 25 iterations of either run.
+Two facts fix the failure on the *optimizer*, not the interface.
 
-So the run did **not** discover goal-reaching behavior at all — it found "don't
-crash, make near-zero net progress." That is a signature of the *optimization
-setup* failing to bootstrap, not of the interface being blind:
+**1. The reward function recognizes good policies.** A known-policy check scoring
+the exact same reward on the same 40 fitness scenarios:
 
-- **Reward-from-scratch is far sparser supervision than imitation.** Stage 2c's
-  57% came from dense per-step teacher targets. Here, arrival is a rare, sparse
-  event; from `μ=0` the population almost never stumbles into an arrival, so the
-  arrival term never gets a gradient and only the weak dense net-progress term
-  drives learning — toward cautious near-stillness.
-- **Black-box CEM over a 150-dim closed-loop policy is a hard search** with this
-  budget (pop 64 × 25 iters × 40 scenarios). The plateau at the no-progress floor
-  is consistent with premature convergence, not with a capacity ceiling.
-- **The interface is not implicated.** The same interface reached 57% under
-  imitation (2c) and supports the 1.00 waypoint witness with privileged state.
-  0% here is about how the readout was trained, not what the controller can see.
+| Policy | Mean reward | Arrivals |
+|---|---|---|
+| Zero readout | −0.200 | 0/40 |
+| Stage 2d CEM recurrent (trained) | −0.179 | (0 on gate) |
+| Stage 2c recurrent readout | **1.106** | 22/40 |
+| Stage 2c ablation readout | 1.086 | 22/40 |
+| Stage 2b state machine | 1.169 | 22/40 |
+| Waypoint witness | 2.837 | 40/40 |
 
-Recurrent (−0.1789) and ablation (−0.1752) final fitnesses are statistically
-indistinguishable — but with both stuck at the no-progress floor, that says
-nothing about the value of memory. The memory question remains **untested**, not
-answered.
+The reward cleanly separates behaving policies (≈1.1, 22/40) from the no-op floor
+(−0.20). A policy achieving ≈1.1 reward is reachable *by this exact policy class*
+(the 2c readouts are the same 150-parameter linear readout on the same reservoir).
+
+**2. CEM-from-zero landed at −0.179 — essentially the no-op floor.** The CEM best
+fitness (`results.json`) plateaus at ≈ **−0.18** for both models, from a `μ=0`
+start, versus the ≈1.1 the exact policy class demonstrably supports. So CEM did
+not recover behavior that was *within reach of its own search space*.
+
+Why from-scratch reward search stalls here, when 2c's imitation reached 57%:
+imitation gave dense per-step teacher targets, whereas the arrival bonus is a
+sparse event a `μ=0` population almost never triggers — so the arrival term gets
+no gradient and only the weak dense net-progress term drives learning, toward
+cautious near-stillness. Black-box CEM over a 150-dim closed-loop policy with this
+budget (pop 64 × 25 × 40) is consistent with premature convergence, not a
+capacity ceiling — the capacity is the same one that reaches 22/40 under 2c's fit.
+
+**What this does NOT establish.** The recurrent (−0.179) and ablation (−0.175)
+final fitnesses are two deterministic point estimates, both stuck at the no-op
+floor; their near-equality is uninformative, not evidence about the value of
+memory. And the scalar training history records only best/mean fitness per
+iteration, not per-episode outcomes — it does **not** support any claim about how
+many arrivals (if any) occurred *during* training. The memory question is
+**untested**, not answered.
 
 ## Bounded conclusion
 
-Under from-scratch reward optimization by CEM on this interface and budget, the
-fixed-reservoir ESN family (recurrent and ablation alike) failed to bootstrap any
-goal-reaching behavior and scored 0% on the fresh gate. This rules out *this
-specific reward-training setup*; it does **not** rule out route memory, and it
-does **not** implicate the observation interface. Only a pass would have been
-conclusive.
+CEM-from-zero failed to bootstrap goal-reaching behavior that is demonstrably
+reachable by this exact policy class, and scored 0% on the fresh gate. **This says
+nothing about whether the observation interface can support the 90% gate.** It
+rules out *this from-scratch reward-training setup* only. Only a pass would have
+been conclusive; the failure remains bounded and confounded (optimization
+budget/search, not the interface).
+
+## Provenance defect (documented, not repaired)
+
+The frozen gate is **not fully disjoint** from prior data. The as-run exclusion
+list (`_PRIOR_SPLIT_PATHS_AS_RUN` in `evaluate_stage2d.py`) omitted two original
+Stage 2 pools, so scenarios leaked in by exact identity:
+
+| Frozen split | ∩ `training.json` (sha `adf27030…`) | ∩ `heldout.json` (sha `1329165a…`) | ∩ prior total |
+|---|---|---|---|
+| `gate_split.json` (100) | 2 | 6 | 8 |
+| `train_split.json` (96) | 1 | 5 | 6 |
+
+Gate and train remain mutually disjoint, and both are disjoint from
+`dev_split.json` and the Stage 2b splits. **This does not undermine the negative:**
+overlap with prior pools can only make arriving *easier*, and the run still
+arrived on nothing (0/100). The spent, one-shot gate is retained exactly as run
+(never regenerated); `PRIOR_SPLIT_PATHS` is corrected to the complete list so
+Stage 2e's fresh gate excludes these pools **and** the spent 2d splits. The
+overlap is codified in `test_stage2d.py` so it cannot be silently erased.
 
 ## What would move the needle next (not yet run, not yet approved)
 
@@ -103,10 +133,13 @@ question is still open.
 
 - Gate split `runs/stage2d/gate_split.json` sha256 `4d52f440892e84f9…` (frozen
   before the run), train split `runs/stage2d/train_split.json` sha256
-  `377629e07f01a92f…`. Both verified exact-identity disjoint from every prior
-  Stage 2/2b split and from each other (`test_stage2d.py`).
-- Excluded priors (sha256 in `gate_results.json`): `runs/stage2/dev_split.json`,
-  `runs/stage2b/gate_split.json`, `runs/stage2b/sm_train_split.json`.
+  `377629e07f01a92f…`. Mutually disjoint and disjoint from `dev_split.json` and
+  the Stage 2b splits, but **not** from `training.json`/`heldout.json` — see
+  *Provenance defect* above (`test_stage2d.py` codifies the exact overlap).
+- As-run excluded priors (sha256 in `gate_results.json`):
+  `runs/stage2/dev_split.json`, `runs/stage2b/gate_split.json`,
+  `runs/stage2b/sm_train_split.json`. Omitted (the defect):
+  `runs/stage2/training.json`, `runs/stage2/heldout.json`.
 - Frozen CEM budget: population 64, n_iter 25, elite_frac 0.20, diagonal
   covariance, 40 stratified fitness scenarios, identical seeds for recurrent and
   ablation. 128,000 total rollouts. Wall clock 154.2 min.

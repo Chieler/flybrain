@@ -608,17 +608,29 @@ selection. Fresh disjoint gate frozen **before** the run.
 `4d52f440892e84f9…`):** recurrent **0.00**, memoryless ablation **0.00** (all
 strata 0.00). Both **FAIL**. References: waypoint 1.00, SM 0.62, 2c recurrent 0.57.
 
-**Diagnosis — optimizer, not interface.** CEM best fitness plateaus at ≈ −0.18 for
-both models (the no-net-progress timeout floor ≈ −0.20); neither run ever entered
-the arrival regime (an arrival contributes +2.0, none appeared). From `μ=0`,
-reward-from-scratch is far sparser than 2c's dense imitation targets, so the
-arrival term never got a gradient and the search converged to cautious
-near-stillness. Recurrent (−0.1789) vs ablation (−0.1752) are indistinguishable,
-but with both stuck at the floor that says nothing about memory. **Bounded
-conclusion:** this rules out *this from-scratch reward-training setup*; per the
-pass-only-is-conclusive asymmetry it does **not** implicate the interface and does
-**not** rule out route memory. The memory question is still open. Full write-up:
-`runs/stage2d/README.md`.
+**Diagnosis — CEM-from-zero failed to bootstrap, not the interface.** A
+known-policy check shows the reward recognizes good policies: the *exact same
+150-param policy class* scores ≈1.1 with 22/40 arrivals under the deterministic 2c
+readouts (recurrent 1.106, ablation 1.086; SM 1.169; waypoint 2.837), versus the
+no-op floor −0.20. CEM-from-`μ=0` plateaued at ≈ −0.18 best fitness — it did not
+recover behavior *within its own search space*. From `μ=0`, reward-from-scratch is
+far sparser than 2c's dense imitation targets, so the sparse arrival term gets no
+gradient and the search converges to near-stillness. The recurrent (−0.179) vs
+ablation (−0.175) finals are two point estimates both stuck at the floor —
+uninformative about memory; and scalar fitness history cannot support any claim
+about arrivals *during* training. **Bounded conclusion:** CEM-from-zero failed to
+bootstrap behavior demonstrably reachable by this policy class; this says **nothing**
+about whether the observation interface can support the 90% gate. Memory question
+still open. Full write-up: `runs/stage2d/README.md`.
+
+**Provenance defect (documented, not repaired).** The as-run exclusion list omitted
+`runs/stage2/training.json` and `runs/stage2/heldout.json`, so the frozen gate
+overlaps them by 8 scenarios (2+6) and the train split by 6 (1+5); gate/train stay
+mutually disjoint and disjoint from `dev_split`/Stage 2b. Overlap can only make
+arriving *easier*, so it cannot fake the 0% negative. The spent gate is retained
+as-run (never regenerated); `PRIOR_SPLIT_PATHS` corrected to the complete list;
+overlap codified in `test_stage2d.py`. Stage 2e must exclude these pools **and** the
+spent 2d gate+train.
 
 **Next probes (not yet run/approved) target optimization, not the interface:**
 warm-start from the 2c imitation readout, denser/curriculum shaping so arrivals

@@ -4,8 +4,12 @@ fixed 2c-winner reservoir, and score it once on a fresh, disjoint gate.
 Provenance discipline (see the spec). The reservoir config is frozen to the 2c
 winner (one-variable design), so there is NO config/hyperparameter selection and
 no train/val split. Two fresh splits are built with `generate_stage2b_split`
-(outward-facing road-end starts excluded), disjoint by exact scenario identity
-from every prior Stage 2/2b split and from each other. The readout is trained by
+(outward-facing road-end starts excluded), intended disjoint by exact scenario
+identity from every prior Stage 2/2b split and from each other. NOTE (documented
+defect): the spent run's exclusion list omitted `runs/stage2/training.json` and
+`runs/stage2/heldout.json`, so the frozen gate overlaps them by 8 scenarios and
+the frozen train split by 6; see `_PRIOR_SPLIT_PATHS_AS_RUN`. The result was 0%,
+so the leak cannot fake a pass and the negative stands. The readout is trained by
 CEM on 40 fixed stratified fitness scenarios with a frozen budget, identically
 for the recurrent model and its matched memoryless ablation, and the frozen gate
 is evaluated exactly once for each.
@@ -40,8 +44,26 @@ from stage2d import (
     train_readout_by_reward,
 )
 
-# Every prior Stage 2 / 2b split -- excluded wholesale from the Stage 2d splits.
+# Every prior Stage 2 / 2b scenario-list split -- excluded wholesale from any
+# freshly generated Stage 2d/2e split. This is the CORRECTED, complete list.
 PRIOR_SPLIT_PATHS = [
+    "runs/stage2/dev_split.json",
+    "runs/stage2/training.json",   # original Stage 2 training pool
+    "runs/stage2/heldout.json",    # original Stage 2 held-out pool
+    "runs/stage2b/gate_split.json",
+    "runs/stage2b/sm_train_split.json",
+]
+
+# DEFECT (documented, not silently repaired): the spent, one-shot Stage 2d run
+# excluded only this incomplete subset, so `training.json` and `heldout.json`
+# leaked in. The frozen gate overlaps them by 8 scenarios (2 training + 6
+# heldout) and the frozen train split by 6 (1 training + 5 heldout); gate and
+# train remain mutually disjoint. Because the Stage 2d result was a 0% FAILURE,
+# the leak cannot manufacture a false pass -- overlap with prior pools can only
+# make arriving *easier*, and the run still arrived on nothing -- so the negative
+# verdict stands. The frozen splits are retained AS RUN (never regenerated); the
+# corrected list above is what Stage 2e must exclude (plus the spent 2d splits).
+_PRIOR_SPLIT_PATHS_AS_RUN = [
     "runs/stage2/dev_split.json",
     "runs/stage2b/gate_split.json",
     "runs/stage2b/sm_train_split.json",
@@ -51,7 +73,9 @@ PRIOR_SPLIT_PATHS = [
 STAGE2D_GATE_SEED = 41
 STAGE2D_TRAIN_SEED = 42
 
-# Predeclared counts: 23 eligible `cross` scenarios remain, 12+8=20 used (3 buffer).
+# Predeclared counts, as the spent run declared them under the (incomplete)
+# as-run exclusion; 12+8=20 `cross` used. Under the corrected PRIOR_SPLIT_PATHS
+# fewer eligible `cross` remain -- Stage 2e re-derives its own budget (7/44/44).
 GATE_COUNTS = {"cross": 12, "regular": 44, "asymmetric": 44}
 TRAIN_COUNTS = {"cross": 8, "regular": 44, "asymmetric": 44}
 

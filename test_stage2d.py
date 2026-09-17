@@ -120,24 +120,40 @@ class TestControllerInterface(unittest.TestCase):
 
 
 class TestSplitDisjointness(unittest.TestCase):
-    def test_stage2d_splits_disjoint_from_all_prior(self):
-        from evaluate_stage2d import build_disjoint_splits, PRIOR_SPLIT_PATHS
-        from evaluate_stage2b import _scenario_key
+    """Validate the FROZEN, spent Stage 2d splits as they are on disk -- including
+    the documented overlap defect (the as-run exclusion omitted training.json and
+    heldout.json). Codifying the exact overlap keeps it from being silently
+    'repaired' by regeneration; the spent one-shot gate must never be replaced."""
 
-        gate, train = build_disjoint_splits()
-        prior = []
-        for p in PRIOR_SPLIT_PATHS:
-            prior += load_scenarios(p)
-        prior_keys = {_scenario_key(s) for s in prior}
-        gate_keys = {_scenario_key(s) for s in gate}
-        train_keys = {_scenario_key(s) for s in train}
+    def _keys(self, path):
+        from evaluate_stage2b import _scenario_key
+        return {_scenario_key(s) for s in load_scenarios(path)}
+
+    def test_frozen_splits_internal_and_clean_disjointness(self):
+        gate = self._keys("runs/stage2d/gate_split.json")
+        train = self._keys("runs/stage2d/train_split.json")
         self.assertEqual(len(gate), 100)   # 12/44/44
         self.assertEqual(len(train), 96)   # 8/44/44
-        self.assertEqual(len(gate_keys), len(gate))
-        self.assertEqual(len(train_keys), len(train))
-        self.assertTrue(gate_keys.isdisjoint(prior_keys))
-        self.assertTrue(train_keys.isdisjoint(prior_keys))
-        self.assertTrue(gate_keys.isdisjoint(train_keys))
+        self.assertTrue(gate.isdisjoint(train))            # gate/train are clean
+        for clean in ("runs/stage2/dev_split.json",
+                      "runs/stage2b/gate_split.json",
+                      "runs/stage2b/sm_train_split.json"):
+            self.assertTrue(gate.isdisjoint(self._keys(clean)))
+            self.assertTrue(train.isdisjoint(self._keys(clean)))
+
+    def test_frozen_splits_known_overlap_defect(self):
+        gate = self._keys("runs/stage2d/gate_split.json")
+        train = self._keys("runs/stage2d/train_split.json")
+        leaked = self._keys("runs/stage2/training.json") | \
+            self._keys("runs/stage2/heldout.json")
+        # Exact, documented leak from the as-run exclusion omission.
+        self.assertEqual(len(gate & leaked), 8)   # 2 training + 6 heldout
+        self.assertEqual(len(train & leaked), 6)   # 1 training + 5 heldout
+
+    def test_corrected_prior_list_covers_the_leak(self):
+        from evaluate_stage2d import PRIOR_SPLIT_PATHS
+        self.assertIn("runs/stage2/training.json", PRIOR_SPLIT_PATHS)
+        self.assertIn("runs/stage2/heldout.json", PRIOR_SPLIT_PATHS)
 
 
 if __name__ == "__main__":
