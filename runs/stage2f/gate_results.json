@@ -1,0 +1,206 @@
+{
+  "fitness_split": "runs/stage2f/fitness_split.json",
+  "gate_split": "runs/stage2f/gate_split.json",
+  "repro_reference_split": "runs/stage2d/train_split.json",
+  "provenance_sha256": {
+    "runs/stage2/dev_split.json": "1a3682705aa39d9d2d4acb5c3bd8465f3f1276064fceadc587395e302bb2c3db",
+    "runs/stage2/training.json": "adf270300f9dcf552550f483848146021ab45c9cc49e7f382a865899d9caac67",
+    "runs/stage2/heldout.json": "1329165ad200b216c7ec81a9aeb10839f8ae3fa697e66a68388ea2560ecd83f3",
+    "runs/stage2b/gate_split.json": "3f7863a68261f5ee031054b528d3a56937ae663a06bcfcb73e49c28ccf907e8f",
+    "runs/stage2b/sm_train_split.json": "8df212c4b270059177f98f23664125a7484991518029710e3408c07e1de9a86f",
+    "runs/stage2d/gate_split.json": "4d52f440892e84f9513d684961df1957099d558e6054cb2c501c597d13ae6cbf",
+    "runs/stage2d/train_split.json": "377629e07f01a92f061ba8bbebd4776c4fccd25a7fc9ec49a7ac95f400b213d0",
+    "runs/stage2e/gate_split.json": "5b5e24b6cab8368ba65e058108cd14c34158b21bc4389c0d55e3abecc3e9470d",
+    "runs/stage2f/fitness_split.json": "cd733968fc18bda4a7109643de330b2f374ba6a9359961eff62836ce0142d38c",
+    "runs/stage2f/gate_split.json": "6da48c3151d9722fa944c816cf52bab3df86065a08b715265b7297ba3ea0f257"
+  },
+  "gate": {
+    "overall_rate": 0.9,
+    "per_layout_rate": 0.8
+  },
+  "reservoir_config": {
+    "n_reservoir": 64,
+    "spectral_radius": 0.8,
+    "leak": 0.5,
+    "input_scale": 1.0
+  },
+  "esn_seed": 0,
+  "cem_budget": {
+    "population": 64,
+    "n_iter": 25,
+    "elite_frac": 0.2,
+    "init_std": 0.1,
+    "std_floor": 0.001,
+    "seed": 0
+  },
+  "warm_start": "stage2c_readout",
+  "fitness_counts": {
+    "cross": 6,
+    "regular": 40,
+    "asymmetric": 40
+  },
+  "gate_counts": {
+    "cross": 12,
+    "regular": 44,
+    "asymmetric": 44
+  },
+  "cross_note": "diagonal-heading waypoint-witnessed cross; NOT orientation-comparable to prior stages; 0.80 cross gate needs 10/12.",
+  "recurrent": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.66,
+    "by_layout_arrival_rate": {
+      "cross": 0.75,
+      "regular": 0.6818181818181818,
+      "asymmetric": 0.6136363636363636
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 66,
+        "collisions": 29,
+        "timeouts": 5,
+        "arrival_rate": 0.66,
+        "mean_arrival_time": 22.98700987211331,
+        "mean_route_length": 33.09962436967128
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 9,
+          "collisions": 1,
+          "timeouts": 2,
+          "arrival_rate": 0.75,
+          "mean_arrival_time": 17.21864029091882,
+          "mean_route_length": 26.608316497644726
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 30,
+          "collisions": 14,
+          "timeouts": 0,
+          "arrival_rate": 0.6818181818181818,
+          "mean_arrival_time": 25.695901812152897,
+          "mean_route_length": 36.91124028594495
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 27,
+          "collisions": 14,
+          "timeouts": 3,
+          "arrival_rate": 0.6136363636363636,
+          "mean_arrival_time": 21.899919799134143,
+          "mean_route_length": 31.02826486448717
+        }
+      }
+    },
+    "reproduction": {
+      "mean_reward": 1.1060338853869525,
+      "n": 40,
+      "arrivals": 22,
+      "collisions": 16,
+      "timeouts": 2
+    },
+    "warmstart_fitness": 54.910871695384664,
+    "warmstart_outcomes_on_fitness": {
+      "mean_reward": 1.4730200747052156,
+      "n": 86,
+      "arrivals": 55,
+      "collisions": 26,
+      "timeouts": 5,
+      "fitness": 54.910871695384664
+    },
+    "best_fitness": 66.98320413730691,
+    "improved_over_warmstart": true,
+    "best_outcomes_on_fitness": {
+      "mean_reward": 1.947028447292483,
+      "n": 86,
+      "arrivals": 67,
+      "collisions": 15,
+      "timeouts": 4,
+      "fitness": 66.98320413730691
+    }
+  },
+  "memoryless_ablation": {
+    "passes_gate": false,
+    "overall_arrival_rate": 0.54,
+    "by_layout_arrival_rate": {
+      "cross": 0.75,
+      "regular": 0.5227272727272727,
+      "asymmetric": 0.5
+    },
+    "breakdown": {
+      "overall": {
+        "trials": 100,
+        "arrivals": 54,
+        "collisions": 44,
+        "timeouts": 2,
+        "arrival_rate": 0.54,
+        "mean_arrival_time": 16.597182409293005,
+        "mean_route_length": 32.662983178306035
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 12,
+          "arrivals": 9,
+          "collisions": 2,
+          "timeouts": 1,
+          "arrival_rate": 0.75,
+          "mean_arrival_time": 13.349340829597935,
+          "mean_route_length": 27.39703667235272
+        },
+        "regular": {
+          "trials": 44,
+          "arrivals": 23,
+          "collisions": 20,
+          "timeouts": 1,
+          "arrival_rate": 0.5227272727272727,
+          "mean_arrival_time": 18.34071789377199,
+          "mean_route_length": 34.36460730196029
+        },
+        "asymmetric": {
+          "trials": 44,
+          "arrivals": 22,
+          "collisions": 22,
+          "timeouts": 0,
+          "arrival_rate": 0.5,
+          "mean_arrival_time": 16.10305777630387,
+          "mean_route_length": 33.03826334692113
+        }
+      }
+    },
+    "reproduction": {
+      "mean_reward": 1.0857227539764787,
+      "n": 40,
+      "arrivals": 22,
+      "collisions": 17,
+      "timeouts": 1
+    },
+    "warmstart_fitness": 57.90236701462605,
+    "warmstart_outcomes_on_fitness": {
+      "mean_reward": 1.5445175123572636,
+      "n": 86,
+      "arrivals": 58,
+      "collisions": 28,
+      "timeouts": 0,
+      "fitness": 57.90236701462605
+    },
+    "best_fitness": 59.93293025358261,
+    "improved_over_warmstart": true,
+    "best_outcomes_on_fitness": {
+      "mean_reward": 1.6960001681957628,
+      "n": 86,
+      "arrivals": 60,
+      "collisions": 24,
+      "timeouts": 2,
+      "fitness": 59.93293025358261
+    }
+  },
+  "references": {
+    "waypoint_witness": 1.0,
+    "state_machine": 0.62,
+    "stage2c_recurrent": 0.57,
+    "stage2d_recurrent": 0.0,
+    "stage2e_recurrent": 0.516
+  },
+  "interpretation": "Recurrent 0.660 vs memoryless ablation 0.540 (references: waypoint witness 1.00, Stage 2b SM 0.62, Stage 2c recurrent 0.57, Stage 2d recurrent 0.00, Stage 2e recurrent 0.52). Aligned-reward fine-tuning did not clear the fresh gate. Per the pass-only-is-conclusive asymmetry this stays bounded and confounded between reward alignment and scenario coverage (and residually capacity/optimization); it does not implicate the interface. Report the recurrent-ablation gap and the collision/arrival breakdown; diagnose before any interface claim or dopamine/connectome learning."
+}
