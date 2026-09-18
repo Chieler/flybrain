@@ -728,10 +728,13 @@ connectome/dopamine learning on a failure.
 
 ## Git
 
-- `master`: Phases 1–2 slice merged.
-- `stage1-prepare-connectome`: connectome pipeline + anatomy angle mapping
-  (this handoff lives here; merge to master when integrating).
-- Working-tree note (2026-09-13): `runs/stage1/results.json` is present but
-  untracked; add it before claiming the result artifact is committed.
+- `master`: current integration branch. As of 2026-09-18 it carries the full
+  Stage 1 → Stage 2f line, fast-forwarded from `stage2d-reward-baseline`
+  (HEAD `8cb551f`); the merged tree is green (125 tests pass). The
+  `stage2d-reward-baseline` feature branch bundled Stage 2c + 2d + 2e + 2f and
+  was deleted after the merge.
+- Working-tree note: the two `.claude/.headroom_wrap_*.json` deletions are
+  unrelated tooling scratch; leave them. `.codex/`, the stage1b spec, and
+  `scratchpad/` are intentionally untracked.
 
 Reproduce data with SETUP.md — nothing under `data/` is versioned.
