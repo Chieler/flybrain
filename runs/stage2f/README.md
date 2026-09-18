@@ -101,9 +101,10 @@ se. Do not over-read it.
 **3. Neither clears the gate — bounded and confounded, not an interface
 verdict.** Stage 2f changed two things at once (reward alignment + a larger
 fitness set), so a failure cannot be attributed to either individually, and
-residual capacity/optimization limits are not ruled out. The result does
-**not** implicate the observation interface. The gap to a pass is
-diagnosable:
+residual capacity/optimization limits are not ruled out. Because only a
+pass is conclusive, this failure is **not evidence** about the observation
+interface either way — it neither implicates it nor clears it. The gap to a
+pass is diagnosable:
 
 - **Collisions still dominate the recurrent misses.** 29 of the 34
   non-arrival gate trials (85%) are collisions, not timeouts — the policy
