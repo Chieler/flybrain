@@ -677,6 +677,55 @@ metric, keep shaping unfarmable); more CEM budget or CMA-ES to test whether the
 recurrent advantage widens toward a pass. Still: no map/planner on the
 observation-only controller; no connectome/dopamine learning on a failure.
 
+### 2026-09-17 Stage 2f: aligned-reward fine-tuning — bounded FAILURE, but the reward fix worked
+
+Built the aligned-reward experiment (`stage2f.py`, `evaluate_stage2f.py`,
+`test_stage2f.py`, `runs/stage2f/`). Two changes vs 2e, addressing its two
+diagnosed gaps: (1) **arrival-primary fitness** —
+`fitness(θ) = arrivals(θ) + mean(secondary)/4.0`, where `secondary =
+0.5·progress − 2.0·[collision] − 0.1·time_fraction` is bounded so its swing
+(`<1`) can never outweigh one more arrival (frozen coefficients, chosen from
+2e results, never tuned on the 2f gate); (2) a larger **86-scenario** fitness
+set (6/40/40) vs 2e's 40. Everything else held from 2e (warm start at the
+deterministic 2c readout, frozen 2c-winner reservoir, matched ablation, CEM
+with best-ever tracking, identical seeds/budget). Cross gate expanded to
+diagonal-heading, waypoint-witnessed scenarios (cardinal cross pool
+exhausted) — **not** orientation-comparable to prior stages; regular/asym
+unchanged and trend-comparable. **Reproduction gate held bit-exact:** both
+models 22/40 arrivals on the fixed 2d-40 reference set. Fresh gate (12
+cross / 44 regular / 44 asymmetric = 100), fully exact-identity disjoint from
+the complete corrected prior set + spent 2d/2e splits + the fitness split
+(asserted). sha `6da48c31…`; fitness sha `cd733968…`.
+
+**One-shot gate (`runs/stage2f/gate_results.json`):** recurrent **0.660**
+(cross 9/12=0.75, regular 0.682, asym 0.614), ablation **0.540** (cross 0.75,
+regular 0.523, asym 0.500). Both **FAIL** 0.90/0.80. References: waypoint
+1.00, SM 0.62, 2c 0.57, 2d 0.00, **2e recurrent 0.516**.
+
+**What it establishes.** (1) **The aligned-fitness fix worked as designed —
+the stage's real contribution.** In 2e, reward and arrivals moved *against*
+each other (ablation CEM raised reward while arrivals fell 22→18). Here they
+move *together*: the recurrent model's fitness rose 54.911 → 66.983 on the
+86-scenario set **and its arrivals rose 55→67 while collisions fell 26→15**
+over the same CEM run. The misalignment is fixed; it just wasn't sufficient
+alone to clear the gate. (2) **Recurrent continues to beat its ablation**
+(0.660 vs 0.540, +0.120; regular +0.159, asym +0.114, cross tied), and
+recurrent itself improved over 2e (0.516 → 0.660) — continuing, not yet
+confirming, the memory hint; still only a hint since both policies fail. (3)
+Neither clears the gate → still bounded, and **confounded between reward
+alignment and scenario coverage** (2f changed both at once), not an
+interface verdict. Diagnosis: collisions still dominate the recurrent misses
+(29/34 non-arrivals); a train→gate generalization gap persists (67/86≈78% on
+the fitness set vs 66% on the gate, narrower than 2e's gap but not closed).
+Full write-up: `runs/stage2f/README.md`.
+
+**Next probes (not yet approved), aimed at the diagnosed gaps, each its own
+fresh gate:** stronger collision shaping (raise `W_collide` / near-miss
+cost); a still larger or curriculum fitness set to further close the
+generalization gap; more CEM budget or CMA-ES now that reward tracks
+arrivals. Still: no map/planner on the observation-only controller; no
+connectome/dopamine learning on a failure.
+
 ## Git
 
 - `master`: Phases 1–2 slice merged.
