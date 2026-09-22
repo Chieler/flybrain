@@ -24,6 +24,7 @@ from simulation import MAX_STEERING
 from stage2c import EchoStateNetwork, N_FEATURES, RecurrentController, observation_features
 from street import initial_layouts
 from evaluate_stage2 import load_scenarios
+from stage2f import episode_secondary
 import evaluate_stage2c as s2c
 
 N8_CONFIG = {"n_reservoir": 8, "spectral_radius": 0.8, "leak": 0.5, "input_scale": 1.0}
@@ -99,3 +100,59 @@ def warm_start_theta(recurrent: bool, layouts=None):
     esn = make_net(recurrent)
     esn.fit(feats, targs, ridge=RIDGE)
     return esn, flatten_theta(esn, recurrent)
+
+
+class NoOpController:
+    """Zero-control baseline: never steers or accelerates."""
+
+    def reset(self) -> None:
+        pass
+
+    def __call__(self, obs) -> Control:
+        return Control(0.0, 0.0)
+
+
+def policy_fitness_arrivals(controller, scenarios, layouts) -> tuple[int, float]:
+    """Arrival-count-primary aligned fitness AND the arrival count for any
+    controller. Mirrors stage2f.aligned_fitness (arrivals + mean(secondary)/4)
+    but also returns arrivals, and accepts a bare controller (e.g. no-op)."""
+    arrivals, secondary_total = 0, 0.0
+    for scenario in scenarios:
+        controller.reset()
+        result = run_street_episode(scenario, layouts[scenario.layout],
+                                    controller, record=True)
+        if result.outcome == "arrival":
+            arrivals += 1
+        secondary_total += episode_secondary(scenario, result)
+    fitness = arrivals + (secondary_total / len(scenarios)) / 4.0
+    return arrivals, fitness
+
+
+def go_no_go(esn, theta0, scales, scenarios, layouts, cfg, recurrent) -> dict:
+    """One-iteration CEM probe: sample the iteration-0 population exactly as
+    cem_maximize does (same seed/std), evaluate theta0 and every candidate, and
+    require >=1 arrival AND a fitness above the no-op baseline. The full run at
+    the same seed reproduces this population as its iteration 0."""
+    theta0 = np.asarray(theta0, dtype=float)
+    dim = theta0.size
+    rng = np.random.default_rng(cfg.seed)                       # matches cem line
+    sigma = np.full(dim, cfg.init_std)
+    samples = rng.normal(np.zeros(dim), sigma, size=(cfg.population, dim))
+
+    best_arr, best_fit, pop_best_fit = 0, -np.inf, -np.inf
+    controller = RecurrentController(esn)
+    for k, z in enumerate(np.vstack([np.zeros(dim), samples])):
+        set_theta(esn, theta0 + scales * z, recurrent)
+        arr, fit = policy_fitness_arrivals(controller, scenarios, layouts)
+        best_arr = max(best_arr, arr)
+        best_fit = max(best_fit, fit)
+        if k > 0:                                               # population only
+            pop_best_fit = max(pop_best_fit, fit)
+    noop_arr, noop_fit = policy_fitness_arrivals(NoOpController(), scenarios, layouts)
+    return {
+        "probe_best_arrivals": int(best_arr),
+        "population_best_fitness": float(pop_best_fit),
+        "noop_fitness": float(noop_fit),
+        "beats_noop": bool(best_fit > noop_fit),
+        "passed": bool(best_arr >= 1 and best_fit > noop_fit),
+    }

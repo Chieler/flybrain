@@ -1,5 +1,8 @@
 import numpy as np
 import stage2g
+from stage2d import CEMConfig, cem_maximize
+from street import initial_layouts
+from evaluate_stage2b import generate_stage2b_split
 
 
 def test_recurrent_net_has_190_trainable_params():
@@ -55,3 +58,38 @@ def test_warm_start_sizes_match_arm():
     _, t_abl = stage2g.warm_start_theta(recurrent=False)
     assert t_rec.size == 190
     assert t_abl.size == 126
+
+
+def _tiny_scenarios():
+    return generate_stage2b_split(
+        999, counts={"cross": 0, "regular": 2, "asymmetric": 0})
+
+
+def test_noop_controller_makes_no_arrivals():
+    layouts = initial_layouts()
+    arr, _ = stage2g.policy_fitness_arrivals(
+        stage2g.NoOpController(), _tiny_scenarios(), layouts)
+    assert arr == 0
+
+
+def test_go_no_go_population_matches_cem_iteration_zero():
+    # go/no-go's sampled population is exactly cem_maximize's iteration-0 draw,
+    # so the full 30-iter run at the same seed reproduces it bit-for-bit.
+    layouts = initial_layouts()
+    scenarios = _tiny_scenarios()
+    esn, theta0 = stage2g.warm_start_theta(True, layouts)
+    slices = stage2g.trainable_slices(esn, recurrent=True)
+    scales = stage2g.block_scales(theta0, slices)
+    cfg = CEMConfig(population=4, n_iter=1, init_std=1.0, seed=0)
+
+    probe = stage2g.go_no_go(esn, theta0, scales, scenarios, layouts, cfg, True)
+
+    def fitness_z(z):
+        stage2g.set_theta(esn, theta0 + scales * z, True)
+        arr, fit = stage2g.policy_fitness_arrivals(
+            stage2c_controller := __import__("stage2c").RecurrentController(esn),
+            scenarios, layouts)
+        return fit
+
+    _, info = cem_maximize(fitness_z, theta0.size, cfg, init_mu=np.zeros(theta0.size))
+    assert probe["population_best_fitness"] == info["best"]["fitness"]
