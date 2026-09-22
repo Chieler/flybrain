@@ -42,3 +42,16 @@ def test_block_scales_formula():
     assert np.allclose(scales[:88], 0.1 * 2.0)          # RMS 2.0
     assert np.allclose(scales[88:152], 0.1 * 1e-3)      # RMS 0 -> floor
     assert np.allclose(scales[152:], 0.1 * 5.0)         # RMS 5.0
+
+
+def test_warm_start_is_deterministic_bit_identical():
+    _, t0a = stage2g.warm_start_theta(recurrent=True)
+    _, t0b = stage2g.warm_start_theta(recurrent=True)
+    assert np.array_equal(t0a, t0b)              # same seed -> identical theta0
+
+
+def test_warm_start_sizes_match_arm():
+    _, t_rec = stage2g.warm_start_theta(recurrent=True)
+    _, t_abl = stage2g.warm_start_theta(recurrent=False)
+    assert t_rec.size == 190
+    assert t_abl.size == 126

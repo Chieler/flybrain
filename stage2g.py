@@ -22,10 +22,14 @@ import numpy as np
 from street import Control, MAX_ACCEL, MAX_BRAKE, run_street_episode
 from simulation import MAX_STEERING
 from stage2c import EchoStateNetwork, N_FEATURES, RecurrentController, observation_features
+from street import initial_layouts
+from evaluate_stage2 import load_scenarios
+import evaluate_stage2c as s2c
 
 N8_CONFIG = {"n_reservoir": 8, "spectral_radius": 0.8, "leak": 0.5, "input_scale": 1.0}
 ESN_SEED = 0
 RIDGE = 1e-3   # BC init ridge (initialization only; frozen, not tuned)
+BC_DEMO_SPLIT = "runs/stage2b/sm_train_split.json"
 
 
 def make_net(recurrent: bool) -> EchoStateNetwork:
@@ -83,3 +87,15 @@ def block_scales(theta: np.ndarray, slices) -> np.ndarray:
         rms = float(np.sqrt(np.mean(theta[start:stop] ** 2)))
         scale[start:stop] = 0.1 * max(rms, 1e-3)
     return scale
+
+
+def warm_start_theta(recurrent: bool, layouts=None):
+    """BC-initialize the net: ridge-fit W_out on the spent teacher-demo split
+    (W_in/W at their seeded init), return (esn, theta0). Deterministic: the
+    waypoint teacher and ridge fit are deterministic given ESN_SEED. BC is
+    initialization only -- the clone is never scored."""
+    layouts = layouts or initial_layouts()
+    feats, targs = s2c.collect_demos(load_scenarios(BC_DEMO_SPLIT), layouts)
+    esn = make_net(recurrent)
+    esn.fit(feats, targs, ridge=RIDGE)
+    return esn, flatten_theta(esn, recurrent)
