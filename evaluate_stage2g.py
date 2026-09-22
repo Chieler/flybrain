@@ -152,6 +152,7 @@ def run_arm(recurrent: bool, train, dev, layouts, cfg) -> dict:
 
     gng = stage2g.go_no_go(esn, theta0, scales, train, layouts, cfg, recurrent)
     if not gng["passed"]:
+        stage2g.set_theta(esn, theta0, recurrent)  # go_no_go leaves esn at a probe cand.
         return {"recurrent": recurrent, "gng": gng, "escalate": True,
                 "warmstart_train_arrivals": warm_train_arr,
                 "warmstart_dev_arrivals": warm_dev_arr, "trained_dev_arrivals": None,
