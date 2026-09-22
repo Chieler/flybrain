@@ -32,6 +32,9 @@ import stage2g
 from stage2d import CEMConfig
 from stage2e import evaluate_policy
 from stage2f import aligned_fitness
+from evaluate_stage2 import GATE_OVERALL_RATE, GATE_PER_LAYOUT_RATE
+from evaluate_stage2b import _breakdown, _gate, _run_per_scenario
+from stage2c import RecurrentController
 
 # Variant B enforced-disjoint set (2026-09-21 amendment): every prior SCORED GATE +
 # 2f fitness + BC demo. Full exclusion of prior TRAINING splits was infeasible (only
@@ -167,3 +170,140 @@ def run_arm(recurrent: bool, train, dev, layouts, cfg) -> dict:
             "trained_dev_arrivals": trained_dev_arr,
             "escalate": trained_dev_arr <= warm_dev_arr,
             "esn": esn, "best_theta": info["best_theta"], "info": info}
+
+
+REF = {"waypoint": 1.00, "stage2b_sm": 0.62, "stage2c": 0.57,
+       "stage2d": 0.00, "stage2e": 0.516, "stage2f_recurrent": 0.660,
+       "stage2f_ablation": 0.540}
+
+
+def gate_breakdown(esn, scenarios, layouts) -> dict:
+    make = lambda s, l: (ctrl := RecurrentController(esn), ctrl.reset)
+    return _breakdown(_run_per_scenario(scenarios, layouts, make), layouts)
+
+
+def score_gate(esn, scenarios, layouts):
+    bd = gate_breakdown(esn, scenarios, layouts)
+    passes, overall, per_layout = _gate(bd, layouts)
+    return passes, overall, per_layout, bd
+
+
+_ATTRIBUTION = (" Attribution is bounded: n=64->n=8 is itself an architectural "
+                "change, so this is not one-variable-vs-2f, and exact attribution "
+                "would need a matched n=8 readout-only control (not run here).")
+
+
+def interpret(recurrent, ablation) -> str:
+    r = recurrent["overall_arrival_rate"]
+    a = ablation["overall_arrival_rate"]
+    lead = (f"Recurrent {r:.3f} vs recurrence-off ablation {a:.3f} (refs: waypoint "
+            f"{REF['waypoint']:.2f}, 2b SM {REF['stage2b_sm']:.2f}, 2c "
+            f"{REF['stage2c']:.2f}, 2d {REF['stage2d']:.2f}, 2e "
+            f"{REF['stage2e']:.3f}, 2f rec {REF['stage2f_recurrent']:.3f}).")
+    if recurrent["passes_gate"] and r > a + 0.02:
+        return (lead + " A trainable recurrent policy clears a fresh gate and learned "
+                "temporal state carries the advantage over the recurrence-off ablation."
+                + _ATTRIBUTION + " Motivates the biologically grounded "
+                "memory/action-selection work (dopamine as modulation, never goal "
+                "bearing).")
+    if recurrent["passes_gate"] and ablation["passes_gate"]:
+        return (lead + " Both arms clear the gate, so recurrence is not necessary "
+                "within this gate and policy family (n=8, this observation interface, "
+                "this reward) -- not a general claim that memory is never required."
+                + _ATTRIBUTION)
+    if recurrent["passes_gate"]:
+        return (lead + " The recurrent policy clears the gate but does not clearly beat "
+                "its ablation, so training exploited the reactive policy state; the "
+                "interface is sufficient and memory is not required within this policy "
+                "family." + _ATTRIBUTION)
+    return (lead + " Neither arm cleared the fresh gate. Under the pass-only asymmetry "
+            "this stays bounded and confounded between optimization budget, capacity "
+            "(n=8) and coverage; it does not implicate the observation interface. "
+            "Report the recurrent-ablation gap and collision/arrival breakdown before "
+            "any interface claim.")
+
+
+def _strip(d: dict) -> dict:
+    return {k: v for k, v in d.items() if k not in ("train_history", "best_theta")}
+
+
+def main(argv=None) -> None:
+    parser = argparse.ArgumentParser(description="Stage 2g trainable recurrent baseline.")
+    parser.add_argument("--out", default="runs/stage2g/results.json")
+    parser.add_argument("--gate-out", default="runs/stage2g/gate_results.json")
+    args = parser.parse_args(argv)
+
+    layouts = initial_layouts()
+    train, dev, gate = build_all_splits()
+    provenance = freeze_and_hash(train, dev, gate)     # frozen + hashed BEFORE training
+    print(f"Stage 2g: train {len(train)} / dev {len(dev)} / gate {len(gate)} "
+          f"(cross 6/6/12). Splits frozen and hashed.")
+
+    t0 = time.perf_counter()
+    rec_run = run_arm(True, train, dev, layouts, CEM_BUDGET)
+    print(f"Recurrent: warm dev arrivals {rec_run['warmstart_dev_arrivals']} -> "
+          f"trained {rec_run['trained_dev_arrivals']}; go/no-go {rec_run['gng']['passed']}.")
+    if rec_run["escalate"]:
+        raise EscalationHalt(
+            "n=8 recurrent did not improve dev arrivals (or failed go/no-go). "
+            "STOP before the gate: write the n=16 + CMA-ES spec amendment "
+            "(implementation, budget, initialization, block scaling) on the SAME "
+            "train/dev splits before any further optimization. Gate is untouched.")
+
+    abl_run = run_arm(False, train, dev, layouts, CEM_BUDGET)
+    if abl_run["escalate"]:
+        raise EscalationHalt(
+            "Ablation failed its go/no-go / dev-improvement precondition; the control "
+            "arm cannot be fairly scored. STOP before the gate and diagnose.")
+    print(f"Done training in {(time.perf_counter()-t0)/60:.1f} min. Scoring gate once.")
+
+    rec_pass, rec_ov, rec_pl, rec_bd = score_gate(rec_run["esn"], gate, layouts)
+    abl_pass, abl_ov, abl_pl, abl_bd = score_gate(abl_run["esn"], gate, layouts)
+    recurrent = {"passes_gate": rec_pass, "overall_arrival_rate": rec_ov,
+                 "by_layout_arrival_rate": rec_pl, "breakdown": rec_bd,
+                 "dev_gate_score": dev_gate_score(gate_breakdown(rec_run["esn"], dev, layouts)),
+                 **_strip(rec_run["info"]), "best_theta": rec_run["best_theta"],
+                 "train_history": rec_run["info"]["history"],
+                 "warmstart_train_arrivals": rec_run["warmstart_train_arrivals"]}
+    ablation = {"passes_gate": abl_pass, "overall_arrival_rate": abl_ov,
+                "by_layout_arrival_rate": abl_pl, "breakdown": abl_bd,
+                **_strip(abl_run["info"]), "best_theta": abl_run["best_theta"],
+                "train_history": abl_run["info"]["history"],
+                "warmstart_train_arrivals": abl_run["warmstart_train_arrivals"]}
+    interpretation = interpret(recurrent, ablation)
+
+    gate_payload = {
+        "train_split": "runs/stage2g/train_split.json",
+        "dev_split": "runs/stage2g/dev_split.json",
+        "gate_split": "runs/stage2g/gate_split.json",
+        "provenance_sha256": provenance,
+        "gate": {"overall_rate": GATE_OVERALL_RATE, "per_layout_rate": GATE_PER_LAYOUT_RATE},
+        "model": stage2g.N8_CONFIG, "esn_seed": stage2g.ESN_SEED,
+        "cem_budget": vars(CEM_BUDGET),
+        "trainable_params": {"recurrent": 190, "ablation": 126},
+        "block_scales": {"recurrent": recurrent.get("block_scales"),
+                         "ablation": ablation.get("block_scales")},
+        "cross_note": ("diagonal-heading waypoint-witnessed cross (same generator as "
+                       "2f, comparable to 2f only); 0.80 cross gate needs 10/12."),
+        "recurrent": {k: v for k, v in recurrent.items()
+                      if k not in ("train_history", "best_theta")},
+        "memoryless_ablation": {k: v for k, v in ablation.items()
+                                if k not in ("train_history", "best_theta")},
+        "references": REF, "interpretation": interpretation,
+    }
+    Path(args.gate_out).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.gate_out).write_text(json.dumps(gate_payload, indent=2) + "\n")
+    results_payload = dict(gate_payload)
+    results_payload["recurrent"] = recurrent
+    results_payload["memoryless_ablation"] = ablation
+    Path(args.out).write_text(json.dumps(results_payload, indent=2) + "\n")
+
+    for name, res in (("Recurrent", recurrent), ("Ablation", ablation)):
+        print(f"{name} gate: overall={res['overall_arrival_rate']:.3f} "
+              f"{res['by_layout_arrival_rate']} "
+              f"{'PASS' if res['passes_gate'] else 'FAIL'}")
+    print(f"Interpretation: {interpretation}")
+
+
+if __name__ == "__main__":
+    main()

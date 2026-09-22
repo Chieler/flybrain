@@ -193,3 +193,26 @@ def test_run_arm_escalates_when_dev_arrivals_do_not_improve(monkeypatch):
                       e2g.CEM_BUDGET.__class__(population=2, n_iter=1,
                                                init_std=1.0, seed=0))
     assert arm["escalate"] is True                         # no dev improvement
+
+
+def test_interpret_both_pass_is_bounded_to_policy_family():
+    import evaluate_stage2g as e2g
+    passing = {"passes_gate": True, "overall_arrival_rate": 0.95,
+               "by_layout_arrival_rate": {"regular": 0.9, "asymmetric": 0.9,
+                                          "cross": 0.9}}
+    rec = dict(passing)
+    abl = dict(passing)
+    text = e2g.interpret(rec, abl)
+    assert "within this gate and policy family" in text
+    assert "not required" not in text or "family" in text
+
+
+def test_interpret_recurrent_only_pass_beats_ablation():
+    import evaluate_stage2g as e2g
+    rec = {"passes_gate": True, "overall_arrival_rate": 0.95,
+           "by_layout_arrival_rate": {"regular": 0.9, "asymmetric": 0.9, "cross": 0.9}}
+    abl = {"passes_gate": False, "overall_arrival_rate": 0.60,
+           "by_layout_arrival_rate": {"regular": 0.7, "asymmetric": 0.6, "cross": 0.5}}
+    text = e2g.interpret(rec, abl)
+    assert "temporal state" in text or "learned temporal" in text
+    assert "attribution" in text.lower()      # honest-attribution caveat present
