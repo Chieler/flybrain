@@ -119,3 +119,29 @@ def test_trainer_guard_keeps_warm_start_when_nothing_beats_it():
     assert info["improved_over_warmstart"] is False
     assert np.allclose(np.asarray(info["best_theta"]), theta0)
     assert info["best_fitness"] == info["warmstart_fitness"]
+
+
+def test_split_sizes_and_strata():
+    import evaluate_stage2g as e2g
+    train, dev, gate = e2g.build_all_splits()
+    assert len(train) == 66 and len(dev) == 46 and len(gate) == 100
+    for split, n_cross in ((train, 6), (dev, 6), (gate, 12)):
+        assert sum(s.layout == "cross" for s in split) == n_cross
+
+
+def test_splits_pairwise_disjoint_and_clear_of_priors():
+    import evaluate_stage2g as e2g
+    from evaluate_stage2 import _scenario_key
+    train, dev, gate = e2g.build_all_splits()
+    keys = [{_scenario_key(s) for s in sp} for sp in (train, dev, gate)]
+    assert keys[0].isdisjoint(keys[1])
+    assert keys[0].isdisjoint(keys[2])
+    assert keys[1].isdisjoint(keys[2])
+    excluded = {_scenario_key(s) for s in e2g._load(e2g.EXCLUDE_PATHS)}
+    for k in keys:
+        assert k.isdisjoint(excluded)     # incl. sm_train_split.json (BC demo)
+
+
+def test_bc_demo_split_is_in_exclusion_set():
+    import evaluate_stage2g as e2g
+    assert stage2g.BC_DEMO_SPLIT in e2g.EXCLUDE_PATHS
