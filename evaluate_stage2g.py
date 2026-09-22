@@ -224,7 +224,10 @@ def interpret(recurrent, ablation) -> str:
 
 
 def _strip(d: dict) -> dict:
-    return {k: v for k, v in d.items() if k not in ("train_history", "best_theta")}
+    # drop "history" too: it is re-added as "train_history" (full results.json) and
+    # must not linger in the sealed gate_results.json.
+    return {k: v for k, v in d.items()
+            if k not in ("history", "train_history", "best_theta")}
 
 
 def main(argv=None) -> None:
