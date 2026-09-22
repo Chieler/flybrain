@@ -29,6 +29,9 @@ from evaluate_stage2f import (
     EXCLUDE_PATHS as _PRIOR_EXCLUDE, _cardinal_strata, _load, generate_expanded_cross,
 )
 import stage2g
+from stage2d import CEMConfig
+from stage2e import evaluate_policy
+from stage2f import aligned_fitness
 
 # Variant B enforced-disjoint set (2026-09-21 amendment): every prior SCORED GATE +
 # 2f fitness + BC demo. Full exclusion of prior TRAINING splits was infeasible (only
@@ -112,3 +115,54 @@ def freeze_and_hash(train, dev, gate) -> dict:
     provenance = {p: sha256(p) for p in ALL_PRIOR_SPLITS}
     provenance.update({p: sha256(p) for p in paths})
     return provenance
+
+
+CEM_BUDGET = CEMConfig(population=64, n_iter=30, elite_frac=0.20,
+                       init_std=1.0, std_floor=0.001, seed=0)
+
+
+class EscalationHalt(Exception):
+    """Raised to stop before the gate: write the n=16 + CMA-ES spec amendment
+    (implementation/budget/init/scaling) before any further optimization."""
+
+
+def dev_gate_score(breakdown) -> float:
+    """min(overall/0.90, cross/0.80, regular/0.80, asym/0.80) on a breakdown.
+    Selection metric; with only n=8 implemented the choice is trivially n=8."""
+    o = breakdown["overall"]["arrival_rate"] / 0.90
+    per = breakdown["by_layout"]
+    layers = [per[name]["arrival_rate"] / 0.80
+              for name in ("regular", "asymmetric", "cross")]
+    return float(min(o, *layers))
+
+
+def _arrivals(esn, theta, scenarios, layouts, recurrent) -> int:
+    stage2g.set_theta(esn, theta, recurrent)
+    return evaluate_policy(esn, scenarios, layouts)["arrivals"]
+
+
+def run_arm(recurrent: bool, train, dev, layouts, cfg) -> dict:
+    """Warm start -> block scales -> go/no-go -> full run. Sets escalate=True on a
+    go/no-go failure or when trained DEV arrivals do not exceed the warm start's."""
+    esn, theta0 = stage2g.warm_start_theta(recurrent, layouts)
+    slices = stage2g.trainable_slices(esn, recurrent)
+    scales = stage2g.block_scales(theta0, slices)
+    warm_train_arr = evaluate_policy(esn, train, layouts)["arrivals"]  # esn at theta0
+    warm_dev_arr = _arrivals(esn, theta0, dev, layouts, recurrent)
+
+    gng = stage2g.go_no_go(esn, theta0, scales, train, layouts, cfg, recurrent)
+    if not gng["passed"]:
+        return {"recurrent": recurrent, "gng": gng, "escalate": True,
+                "warmstart_train_arrivals": warm_train_arr,
+                "warmstart_dev_arrivals": warm_dev_arr, "trained_dev_arrivals": None,
+                "esn": esn, "best_theta": theta0.tolist(), "info": None}
+
+    esn, info = stage2g.train_by_reward_blockscaled(
+        esn, theta0, scales, train, layouts, cfg, aligned_fitness, recurrent)
+    trained_dev_arr = evaluate_policy(esn, dev, layouts)["arrivals"]   # esn at best
+    return {"recurrent": recurrent, "gng": gng,
+            "warmstart_train_arrivals": warm_train_arr,
+            "warmstart_dev_arrivals": warm_dev_arr,
+            "trained_dev_arrivals": trained_dev_arr,
+            "escalate": trained_dev_arr <= warm_dev_arr,
+            "esn": esn, "best_theta": info["best_theta"], "info": info}

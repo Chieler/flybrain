@@ -163,3 +163,33 @@ def test_overlap_provenance_enforced_zero_covers_all_priors():
         assert set(report[name]) == set(e2g.ALL_PRIOR_SPLITS)   # every prior split accounted
         for path in e2g.EXCLUDE_PATHS:
             assert report[name][path] == 0                      # enforced overlaps are zero
+
+
+def test_dev_gate_score_is_min_of_normalized_rates():
+    import evaluate_stage2g as e2g
+    bd = {"overall": {"arrival_rate": 0.90},
+          "by_layout": {"regular": {"arrival_rate": 0.80},
+                        "asymmetric": {"arrival_rate": 0.80},
+                        "cross": {"arrival_rate": 0.40}}}  # cross half of bar
+    assert abs(e2g.dev_gate_score(bd) - 0.5) < 1e-9        # 0.40/0.80 == 0.5
+
+
+def test_run_arm_escalates_when_dev_arrivals_do_not_improve(monkeypatch):
+    # Force the trainer to return the warm start unchanged (zero scales path):
+    import evaluate_stage2g as e2g
+    import stage2g
+    real = stage2g.block_scales
+    monkeypatch.setattr(stage2g, "block_scales",
+                        lambda theta, slices: real(theta, slices) * 0.0)
+    # Force go/no-go to pass so we reach the dev-improvement check:
+    monkeypatch.setattr(stage2g, "go_no_go",
+                        lambda *a, **k: {"passed": True, "probe_best_arrivals": 1,
+                                         "population_best_fitness": 0.0,
+                                         "noop_fitness": -1.0, "beats_noop": True})
+    layouts = initial_layouts()
+    train = e2g.build_split(70, {"cross": 0, "regular": 2, "asymmetric": 0}, [])
+    dev = e2g.build_split(71, {"cross": 0, "regular": 2, "asymmetric": 0}, train)
+    arm = e2g.run_arm(True, train, dev, layouts,
+                      e2g.CEM_BUDGET.__class__(population=2, n_iter=1,
+                                               init_std=1.0, seed=0))
+    assert arm["escalate"] is True                         # no dev improvement
