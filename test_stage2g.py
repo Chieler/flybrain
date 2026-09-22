@@ -216,3 +216,17 @@ def test_interpret_recurrent_only_pass_beats_ablation():
     text = e2g.interpret(rec, abl)
     assert "temporal state" in text or "learned temporal" in text
     assert "attribution" in text.lower()      # honest-attribution caveat present
+
+
+def test_interpret_recurrent_pass_ablation_fail_makes_no_memory_claim():
+    # rec passes, ablation FAILED the gate (cross 0.75), overall margin within 0.02.
+    # A failed memoryless arm must NOT be read as "memory not required".
+    import evaluate_stage2g as e2g
+    rec = {"passes_gate": True, "overall_arrival_rate": 0.92,
+           "by_layout_arrival_rate": {"regular": 0.90, "asymmetric": 0.90, "cross": 0.90}}
+    abl = {"passes_gate": False, "overall_arrival_rate": 0.91,   # margin 0.01, FAILED
+           "by_layout_arrival_rate": {"regular": 0.91, "asymmetric": 0.91, "cross": 0.75}}
+    text = e2g.interpret(rec, abl)
+    assert "memory is not required within this policy family" not in text  # no overclaim
+    assert "weak, mixed evidence" in text.lower()
+    assert "attribution" in text.lower()

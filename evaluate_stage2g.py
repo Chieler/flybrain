@@ -150,7 +150,7 @@ def run_arm(recurrent: bool, train, dev, layouts, cfg) -> dict:
     esn, theta0 = stage2g.warm_start_theta(recurrent, layouts)
     slices = stage2g.trainable_slices(esn, recurrent)
     scales = stage2g.block_scales(theta0, slices)
-    warm_train_arr = evaluate_policy(esn, train, layouts)["arrivals"]  # esn at theta0
+    warm_train_arr = _arrivals(esn, theta0, train, layouts, recurrent)  # esn->theta0
     warm_dev_arr = _arrivals(esn, theta0, dev, layouts, recurrent)
 
     gng = stage2g.go_no_go(esn, theta0, scales, train, layouts, cfg, recurrent)
@@ -212,10 +212,15 @@ def interpret(recurrent, ablation) -> str:
                 "this reward) -- not a general claim that memory is never required."
                 + _ATTRIBUTION)
     if recurrent["passes_gate"]:
-        return (lead + " The recurrent policy clears the gate but does not clearly beat "
-                "its ablation, so training exploited the reactive policy state; the "
-                "interface is sufficient and memory is not required within this policy "
-                "family." + _ATTRIBUTION)
+        # rec passed, ablation did NOT pass, and the overall margin is within 0.02.
+        # A failed memoryless arm is weak evidence FOR memory, not against it -- do
+        # not claim memory is unnecessary here (confined to the both-pass branch).
+        return (lead + " The recurrent policy clears the gate while the recurrence-off "
+                "ablation does not, yet the overall-rate margin is within 0.02, so the "
+                "edge sits in the stratum the ablation missed rather than a broad gap. "
+                "Weak, mixed evidence: report the per-layout breakdown; a failed "
+                "memoryless arm does not license any 'memory unnecessary' claim."
+                + _ATTRIBUTION)
     return (lead + " Neither arm cleared the fresh gate. Under the pass-only asymmetry "
             "this stays bounded and confounded between optimization budget, capacity "
             "(n=8) and coverage; it does not implicate the observation interface. "
@@ -224,10 +229,11 @@ def interpret(recurrent, ablation) -> str:
 
 
 def _strip(d: dict) -> dict:
-    # drop "history" too: it is re-added as "train_history" (full results.json) and
-    # must not linger in the sealed gate_results.json.
+    # drop "history" (re-added as "train_history" in the full results.json) and "best"
+    # (a z-space weight sample, redundant with best_theta/best_fitness) so no weight
+    # vector or per-iteration trace lingers in the sealed gate_results.json.
     return {k: v for k, v in d.items()
-            if k not in ("history", "train_history", "best_theta")}
+            if k not in ("history", "train_history", "best_theta", "best")}
 
 
 def main(argv=None) -> None:
