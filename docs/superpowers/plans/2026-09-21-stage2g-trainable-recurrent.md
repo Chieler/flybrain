@@ -18,7 +18,7 @@
 - **Frozen CEM budget (both arms identical):** `population=64, n_iter=30, elite_frac=0.20, init_std=1.0, std_floor=0.001, seed=0`. Fixed unconditionally; any timing smoke is report-only.
 - **Fitness:** `stage2f.aligned_fitness` unchanged (`arrivals + mean(secondary)/4`). Privileged geometry enters the reward only.
 - **Splits:** train(seed 70, 6/30/30=66), dev(seed 71, 6/20/20=46), gate(seed 72, 12/44/44=100). Diagonal witnessed cross via `evaluate_stage2f.generate_expanded_cross`; regular/asym via `generate_stage2b_split`. Generated train→dev→gate, each excluding the earlier; **frozen and sha256-hashed before any training.**
-- **Exclusion set (asserted, fail loudly):** every fresh split is exact-identity disjoint (`_scenario_key`) from the complete corrected prior set + all spent 2d/2e/2f splits + `runs/stage2b/sm_train_split.json` (the BC-demo split) + each other.
+- **Exclusion set — Variant B (2026-09-21 amendment; asserted, fail loudly):** every newly frozen, Stage-2g-policy-unseen split is exact-identity disjoint (`_scenario_key`) from the **enforced-disjoint set** — every prior **scored gate** (`runs/stage2b`, `2d`, `2e`, `2f` gate splits) + **2f fitness** (`runs/stage2f/fitness_split.json`) + `runs/stage2b/sm_train_split.json` (the BC-demo split) + Stage 2g's own earlier splits + each other. The full prior exclusion was **infeasible** (17 regular scenarios). Older prior **training** splits may recur — historical design exposure, **not** Stage 2g policy-training leakage. Overlap counts vs **every** prior split are recorded; enforced overlaps asserted zero.
 - **Escalation is a hard halt.** Escalate iff the trained n=8 recurrent model fails go/no-go OR fails to improve **dev arrivals** over its warm start. On escalation the run stops before the gate; n=16 + CMA-ES is **not implemented** — it requires a separate spec amendment first.
 - **Gate:** PASS = overall ≥0.90 AND every layout ≥0.80 (cross needs 10/12). The gate is generated last, never inspected until the single scoring event.
 - **Determinism:** same seed → bit-identical `θ₀`; log warm-start train arrivals per arm (no cross-stage reproduction fingerprint — the network is new).
@@ -531,11 +531,13 @@ git commit -m "feat(stage2g): block-scaled CEM trainer with warm-start guard"
 **Interfaces:**
 - Consumes: `evaluate_stage2f.{EXCLUDE_PATHS, generate_expanded_cross, _cardinal_strata, _load}`, `evaluate_stage2.{_scenario_key, load_scenarios, save_scenarios, sha256}`, `street.initial_layouts`.
 - Produces:
-  - `EXCLUDE_PATHS: list[str]` = 2f's `EXCLUDE_PATHS` + `["runs/stage2f/fitness_split.json", "runs/stage2f/gate_split.json"]` + `[stage2g.BC_DEMO_SPLIT]`.
+  - **(Amended 2026-09-21 — Variant B.)** `EXCLUDE_PATHS: list[str]` (the enforced-disjoint set) = every prior **scored gate** `["runs/stage2b/gate_split.json","runs/stage2d/gate_split.json","runs/stage2e/gate_split.json","runs/stage2f/gate_split.json"]` + 2f fitness `["runs/stage2f/fitness_split.json"]` + `[stage2g.BC_DEMO_SPLIT]`. NOT 2f's full `EXCLUDE_PATHS` (that pulled in prior *training* splits and left only 17 regular scenarios — infeasible). Older training splits may recur (historical exposure, not leakage).
+  - `ALL_PRIOR_SPLITS: list[str]` = every prior split (2f's `EXCLUDE_PATHS` + 2f fitness + 2f gate, deduped) — used for provenance overlap accounting, a superset of `EXCLUDE_PATHS`.
   - Seeds `TRAIN_SEED=70, DEV_SEED=71, GATE_SEED=72`; `TRAIN_COUNTS={"cross":6,"regular":30,"asymmetric":30}`, `DEV_COUNTS={"cross":6,"regular":20,"asymmetric":20}`, `GATE_COUNTS={"cross":12,"regular":44,"asymmetric":44}`.
-  - `build_split(seed, counts, extra_exclude) -> list[StreetScenario]`
+  - `build_split(seed, counts, extra_exclude) -> list[StreetScenario]` — guards cross gen (`counts["cross"]` of 0 → no cross).
   - `build_all_splits() -> tuple[list, list, list]` — train, then dev (excl train), then gate (excl train+dev); each asserted disjoint.
-  - `freeze_and_hash(train, dev, gate) -> dict[str, str]` — writes the three JSONs, returns `{path: sha256}` for them + every exclusion path.
+  - `overlap_provenance(train, dev, gate) -> dict[str, dict[str, int]]` — overlap count of each new split against **every** prior split; asserts enforced-set overlaps are zero, records re-admitted overlaps.
+  - `freeze_and_hash(train, dev, gate) -> dict[str, str]` — asserts overlap provenance, writes the three JSONs, returns `{path: sha256}` for them + every prior split.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -565,21 +567,40 @@ def test_splits_pairwise_disjoint_and_clear_of_priors():
 def test_bc_demo_split_is_in_exclusion_set():
     import stage2g
     assert stage2g.BC_DEMO_SPLIT in e2g.EXCLUDE_PATHS
+
+
+def test_every_prior_scored_gate_is_enforced_excluded():
+    for g in ("runs/stage2b/gate_split.json", "runs/stage2d/gate_split.json",
+              "runs/stage2e/gate_split.json", "runs/stage2f/gate_split.json"):
+        assert g in e2g.EXCLUDE_PATHS
+
+
+def test_overlap_provenance_enforced_zero_covers_all_priors():
+    train, dev, gate = e2g.build_all_splits()
+    report = e2g.overlap_provenance(train, dev, gate)
+    assert set(e2g.EXCLUDE_PATHS).issubset(set(e2g.ALL_PRIOR_SPLITS))
+    for name in ("train", "dev", "gate"):
+        assert set(report[name]) == set(e2g.ALL_PRIOR_SPLITS)   # every prior split accounted
+        for path in e2g.EXCLUDE_PATHS:
+            assert report[name][path] == 0                      # enforced overlaps are zero
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `pytest test_stage2g.py -k "split or bc_demo" -v`
+Run: `pytest test_stage2g.py -k "split or bc_demo or prior or provenance" -v`
 Expected: FAIL (`evaluate_stage2g` does not exist).
 
 - [ ] **Step 3: Write the minimal implementation**
 
 ```python
 # evaluate_stage2g.py
-"""Stage 2g evaluation: fully-trainable recurrent baseline, scored once on a fresh
-0.90/0.80 gate. Three fresh splits (train 66 / dev 46 / gate 100) share the scarce
-diagonal witnessed-cross pool; they are frozen and sha256-hashed BEFORE any training.
-The gate is generated last and never inspected until the single scoring event.
+"""Stage 2g evaluation: fully-trainable recurrent baseline, scored once on a newly
+frozen 0.90/0.80 gate. Three newly frozen, Stage-2g-policy-unseen splits (train 66 /
+dev 46 / gate 100) share the scarce diagonal witnessed-cross pool; they are frozen
+and sha256-hashed BEFORE any training. The gate is generated last and never inspected
+until the single scoring event. Disjointness follows the Variant B enforced set
+(prior scored gates + 2f fitness + BC demo); older prior TRAINING splits may recur as
+historical exposure -- overlap counts vs every prior split are recorded.
 
 Escalation is a hard halt: if the trained n=8 recurrent model fails go/no-go or
 fails to improve DEV arrivals over its warm start, the run stops before the gate --
@@ -601,9 +622,22 @@ from evaluate_stage2f import (
 )
 import stage2g
 
-SPENT_2F = ["runs/stage2f/fitness_split.json", "runs/stage2f/gate_split.json"]
-# BC-demo split is training footprint -> excluded from every fresh split (amendment).
-EXCLUDE_PATHS = list(_PRIOR_EXCLUDE) + SPENT_2F + [stage2g.BC_DEMO_SPLIT]
+# Variant B enforced-disjoint set (2026-09-21 amendment): every prior SCORED GATE +
+# 2f fitness + BC demo. Full exclusion of prior TRAINING splits was infeasible (only
+# 17 regular scenarios left). Older training splits may recur -> historical design
+# exposure, NOT Stage 2g policy-training leakage.
+PRIOR_GATES = [
+    "runs/stage2b/gate_split.json",
+    "runs/stage2d/gate_split.json",
+    "runs/stage2e/gate_split.json",
+    "runs/stage2f/gate_split.json",
+]
+SPENT_2F_FITNESS = ["runs/stage2f/fitness_split.json"]
+EXCLUDE_PATHS = PRIOR_GATES + SPENT_2F_FITNESS + [stage2g.BC_DEMO_SPLIT]
+
+# Every prior split (enforced or re-admitted) -- for provenance overlap accounting.
+ALL_PRIOR_SPLITS = list(dict.fromkeys(
+    list(_PRIOR_EXCLUDE) + SPENT_2F_FITNESS + ["runs/stage2f/gate_split.json"]))
 
 TRAIN_SEED, DEV_SEED, GATE_SEED = 70, 71, 72
 TRAIN_COUNTS = {"cross": 6, "regular": 30, "asymmetric": 30}    # 66
@@ -622,7 +656,7 @@ def build_split(seed: int, counts: dict, extra_exclude) -> list:
     """One fresh stratified split (diagonal witnessed cross + cardinal reg/asym),
     disjoint from EXCLUDE_PATHS plus `extra_exclude` (earlier fresh splits)."""
     exclude = _load(EXCLUDE_PATHS) + list(extra_exclude)
-    cross = generate_expanded_cross(seed, exclude, counts["cross"])
+    cross = generate_expanded_cross(seed, exclude, counts["cross"]) if counts["cross"] else []
     rest = _cardinal_strata(seed, exclude, counts)
     split = cross + rest
     _assert_disjoint(split, exclude, f"split(seed={seed})")
@@ -637,8 +671,28 @@ def build_all_splits():
     return train, dev, gate
 
 
+def overlap_provenance(train, dev, gate) -> dict:
+    """Overlap count of each new split against EVERY prior split. Enforced-set
+    overlaps are asserted zero (fail loudly); re-admitted training-split overlaps
+    are recorded as historical exposure (not Stage 2g policy-training leakage)."""
+    enforced = set(EXCLUDE_PATHS)
+    report = {}
+    for name, split in (("train", train), ("dev", dev), ("gate", gate)):
+        keys = {_scenario_key(s) for s in split}
+        per_prior = {}
+        for path in ALL_PRIOR_SPLITS:
+            n = len(keys & {_scenario_key(s) for s in load_scenarios(path)})
+            per_prior[path] = n
+            if path in enforced:
+                assert n == 0, f"{name} overlaps enforced-excluded {path} ({n})"
+        report[name] = per_prior
+    return report
+
+
 def freeze_and_hash(train, dev, gate) -> dict:
-    """Write the three splits and return sha256 for them + every exclusion path."""
+    """Assert overlap provenance, write the three splits, and return sha256 for them
+    + every prior split (enforced and re-admitted)."""
+    overlap_provenance(train, dev, gate)          # fail loudly BEFORE freezing
     paths = {"runs/stage2g/train_split.json": train,
              "runs/stage2g/dev_split.json": dev,
              "runs/stage2g/gate_split.json": gate}
@@ -646,15 +700,15 @@ def freeze_and_hash(train, dev, gate) -> dict:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         if not Path(path).exists():
             save_scenarios(path, split)
-    provenance = {p: sha256(p) for p in EXCLUDE_PATHS}
+    provenance = {p: sha256(p) for p in ALL_PRIOR_SPLITS}
     provenance.update({p: sha256(p) for p in paths})
     return provenance
 ```
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `pytest test_stage2g.py -k "split or bc_demo" -v`
-Expected: PASS (3 tests).
+Run: `pytest test_stage2g.py -k "split or bc_demo or prior or provenance" -v`
+Expected: PASS (5 tests).
 
 - [ ] **Step 5: Commit**
 
