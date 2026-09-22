@@ -145,3 +145,21 @@ def test_splits_pairwise_disjoint_and_clear_of_priors():
 def test_bc_demo_split_is_in_exclusion_set():
     import evaluate_stage2g as e2g
     assert stage2g.BC_DEMO_SPLIT in e2g.EXCLUDE_PATHS
+
+
+def test_every_prior_scored_gate_is_enforced_excluded():
+    import evaluate_stage2g as e2g
+    for g in ("runs/stage2b/gate_split.json", "runs/stage2d/gate_split.json",
+              "runs/stage2e/gate_split.json", "runs/stage2f/gate_split.json"):
+        assert g in e2g.EXCLUDE_PATHS
+
+
+def test_overlap_provenance_enforced_zero_covers_all_priors():
+    import evaluate_stage2g as e2g
+    train, dev, gate = e2g.build_all_splits()
+    report = e2g.overlap_provenance(train, dev, gate)
+    assert set(e2g.EXCLUDE_PATHS).issubset(set(e2g.ALL_PRIOR_SPLITS))
+    for name in ("train", "dev", "gate"):
+        assert set(report[name]) == set(e2g.ALL_PRIOR_SPLITS)   # every prior split accounted
+        for path in e2g.EXCLUDE_PATHS:
+            assert report[name][path] == 0                      # enforced overlaps are zero
