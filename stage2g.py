@@ -25,6 +25,8 @@ from stage2c import EchoStateNetwork, N_FEATURES, RecurrentController, observati
 from street import initial_layouts
 from evaluate_stage2 import load_scenarios
 from stage2f import episode_secondary
+from stage2d import cem_maximize
+from stage2e import evaluate_policy
 import evaluate_stage2c as s2c
 
 N8_CONFIG = {"n_reservoir": 8, "spectral_radius": 0.8, "leak": 0.5, "input_scale": 1.0}
@@ -156,3 +158,36 @@ def go_no_go(esn, theta0, scales, scenarios, layouts, cfg, recurrent) -> dict:
         "beats_noop": bool(best_fit > noop_fit),
         "passed": bool(best_arr >= 1 and best_fit > noop_fit),
     }
+
+
+def train_by_reward_blockscaled(esn, theta0, scales, scenarios, layouts, cfg,
+                                fitness_fn, recurrent):
+    """Fine-tune all trainable weights by CEM in normalized z-space
+    (theta = theta0 + scales*z, init_mu=0). Best-ever candidate with a warm-start
+    guard: never ship a policy worse than theta0. Reuses cem_maximize unmodified."""
+    theta0 = np.asarray(theta0, dtype=float)
+    scales = np.asarray(scales, dtype=float)
+    dim = theta0.size
+
+    def fitness_z(z: np.ndarray) -> float:
+        set_theta(esn, theta0 + scales * z, recurrent)
+        return fitness_fn(esn, scenarios, layouts)
+
+    f0 = fitness_z(np.zeros(dim))                     # warm-start fitness
+    warmstart_outcomes = evaluate_policy(esn, scenarios, layouts, fitness_fn)
+    _, info = cem_maximize(fitness_z, dim, cfg, init_mu=np.zeros(dim))
+    if info["best"]["fitness"] > f0:
+        best_z = np.asarray(info["best"]["theta"], dtype=float)
+        info["improved_over_warmstart"] = True
+    else:
+        best_z = np.zeros(dim)
+        info["improved_over_warmstart"] = False
+    best_theta = theta0 + scales * best_z
+    set_theta(esn, best_theta, recurrent)
+    info["warmstart_fitness"] = float(f0)
+    info["warmstart_outcomes"] = warmstart_outcomes
+    info["best_fitness"] = float(max(info["best"]["fitness"], f0))
+    info["best_theta"] = best_theta.tolist()
+    info["best_outcomes"] = evaluate_policy(esn, scenarios, layouts, fitness_fn)
+    info["block_scales"] = [float(scales[s]) for s, _ in trainable_slices(esn, recurrent)]
+    return esn, info

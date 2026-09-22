@@ -1,5 +1,6 @@
 import numpy as np
 import stage2g
+import stage2d
 from stage2d import CEMConfig, cem_maximize
 from street import initial_layouts
 from evaluate_stage2b import generate_stage2b_split
@@ -93,3 +94,28 @@ def test_go_no_go_population_matches_cem_iteration_zero():
 
     _, info = cem_maximize(fitness_z, theta0.size, cfg, init_mu=np.zeros(theta0.size))
     assert probe["population_best_fitness"] == info["best"]["fitness"]
+
+
+def test_cem_maximize_is_untouched_by_stage2g():
+    # Stage 2g must reparameterize AROUND cem_maximize, never edit it.
+    import inspect
+    src = inspect.getsource(stage2d.cem_maximize)
+    assert "sigma = np.full(dim, cfg.init_std)" in src   # signature line intact
+
+
+def test_trainer_guard_keeps_warm_start_when_nothing_beats_it():
+    layouts = initial_layouts()
+    scenarios = _tiny_scenarios()
+    esn, theta0 = stage2g.warm_start_theta(True, layouts)
+    slices = stage2g.trainable_slices(esn, recurrent=True)
+    scales = stage2g.block_scales(theta0, slices)
+    from stage2f import aligned_fitness
+
+    # zero scales => every candidate == theta0 => nothing can beat the warm start
+    esn, info = stage2g.train_by_reward_blockscaled(
+        esn, theta0, np.zeros_like(scales), scenarios, layouts,
+        CEMConfig(population=4, n_iter=2, init_std=1.0, seed=0),
+        aligned_fitness, recurrent=True)
+    assert info["improved_over_warmstart"] is False
+    assert np.allclose(np.asarray(info["best_theta"]), theta0)
+    assert info["best_fitness"] == info["warmstart_fitness"]
