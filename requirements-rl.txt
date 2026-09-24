@@ -1,0 +1,9 @@
+# requirements-rl.txt
+-r requirements.txt
+torch==2.14.0
+gymnasium==1.3.0
+stable-baselines3==2.9.0
+sb3-contrib==2.9.0
+# Test runner for the Stage 2h suite (this repo's .venv lacks pytest; the RL venv
+# is the declared environment for Stage 2h tests).
+pytest==9.1.1

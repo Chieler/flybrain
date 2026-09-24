@@ -5,3 +5,5 @@ data/
 scenarios.json
 .worktrees/
 .serena/
+.venv-rl/
+runs/stage2h/models/
