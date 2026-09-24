@@ -84,3 +84,82 @@ class StreetNavigationEnv(gym.Env):
         info = {"outcome": outcome, "layout": scenario.layout}
         return observation, episode_reward(
             previous, current, self.initial_distance, outcome), terminated, truncated, info
+
+
+from stable_baselines3 import PPO
+from stable_baselines3.common.env_util import make_vec_env as sb3_make_vec_env
+from stable_baselines3.common.vec_env import DummyVecEnv
+from sb3_contrib import RecurrentPPO
+from evaluate_stage2 import GATE_OVERALL_RATE, GATE_PER_LAYOUT_RATE
+
+PPO_SEEDS = (0, 1, 2)
+TOTAL_TIMESTEPS = 1_000_000
+PPO_KWARGS = {
+    "n_steps": 256, "batch_size": 256, "n_epochs": 5,
+    "learning_rate": 3e-4, "gamma": 0.995, "gae_lambda": 0.95,
+    "ent_coef": 0.01, "verbose": 0, "device": "cpu",
+}
+
+
+def make_vec_env(scenarios, seed, n_envs=8):
+    return sb3_make_vec_env(
+        lambda: StreetNavigationEnv(scenarios), n_envs=n_envs, seed=seed,
+        vec_env_cls=DummyVecEnv)
+
+
+def make_model(recurrent, scenarios, seed, n_envs=8, overrides=None):
+    kwargs = dict(PPO_KWARGS)
+    kwargs.update(overrides or {})
+    env = make_vec_env(scenarios, seed, n_envs)
+    cls, policy = ((RecurrentPPO, "MlpLstmPolicy") if recurrent
+                   else (PPO, "MlpPolicy"))
+    return cls(policy, env, seed=seed, **kwargs)
+
+
+def train_model(recurrent, scenarios, seed, path):
+    model = make_model(recurrent, scenarios, seed)
+    model.learn(total_timesteps=TOTAL_TIMESTEPS)
+    model.save(path)
+    return model
+
+
+def score_model(model, scenarios, layouts=None):
+    layouts = layouts or initial_layouts()
+    outcomes = []
+    by_layout = {name: [] for name in layouts}
+    for scenario in scenarios:
+        env = StreetNavigationEnv([scenario], layouts)
+        obs, _ = env.reset(options={"scenario_index": 0})
+        state, episode_start = None, np.ones((1,), dtype=bool)
+        done = False
+        while not done:
+            action, state = model.predict(
+                obs, state=state, episode_start=episode_start, deterministic=True)
+            obs, _, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
+            episode_start[:] = done
+        outcomes.append(info["outcome"])
+        by_layout[scenario.layout].append(info["outcome"])
+    arrivals = outcomes.count("arrival")
+    rates = {name: values.count("arrival") / len(values)
+             for name, values in by_layout.items() if values}
+    overall = arrivals / len(outcomes)
+    return {
+        "trials": len(outcomes), "arrivals": arrivals,
+        "collisions": outcomes.count("collision"),
+        "timeouts": outcomes.count("timeout"),
+        "overall_arrival_rate": overall,
+        "by_layout_arrival_rate": rates,
+        "by_layout": {name: {"trials": len(values),
+                              "arrivals": values.count("arrival")}
+                      for name, values in by_layout.items() if values},
+        "passes_gate": overall >= GATE_OVERALL_RATE and all(
+            rate >= GATE_PER_LAYOUT_RATE for rate in rates.values()),
+    }
+
+
+def gate_score(score):
+    return min(
+        score["overall_arrival_rate"] / GATE_OVERALL_RATE,
+        *(rate / GATE_PER_LAYOUT_RATE
+          for rate in score["by_layout_arrival_rate"].values()))

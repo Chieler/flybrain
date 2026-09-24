@@ -82,3 +82,25 @@ def test_frozen_stage2h_splits_have_declared_sizes_and_no_overlap():
     assert keys[1].isdisjoint(keys[2])
     prior = {_scenario_key(s) for s in e2h._load(e2h.PRIOR_SPLITS)}
     assert all(group.isdisjoint(prior) for group in keys)
+
+
+@pytest.mark.parametrize("recurrent", [False, True])
+def test_ppo_arm_learns_and_scores_without_privileged_policy_inputs(tmp_path, recurrent):
+    scenarios = [one_straight_scenario()]
+    model = stage2h.make_model(recurrent, scenarios, seed=0, n_envs=1,
+                               overrides={"n_steps": 32, "batch_size": 32,
+                                          "n_epochs": 1})
+    model.learn(total_timesteps=32)
+    path = tmp_path / ("recurrent" if recurrent else "feedforward")
+    model.save(path)
+    score = stage2h.score_model(model, scenarios)
+    assert score["trials"] == 1
+    assert score["arrivals"] + score["collisions"] + score["timeouts"] == 1
+    assert set(score["by_layout"]) == {"cross"}
+
+
+def test_gate_score_is_worst_normalized_threshold():
+    score = {"overall_arrival_rate": 0.90,
+             "by_layout_arrival_rate": {
+                 "cross": 0.40, "regular": 0.80, "asymmetric": 0.80}}
+    assert stage2h.gate_score(score) == pytest.approx(0.5)
