@@ -747,3 +747,47 @@ combined arrival and fitness maxima from potentially different candidates, and
 existing split files were hashed without verifying regenerated identities. The
 as-run readiness rule (one extra dev arrival, 15→16/46) was too weak; this is a
 design defect and a reason Stage 2h uses a separate 0.90/0.80 readiness split.
+
+## 2026-09-24 Stage 2h — PPO test (readiness FAILED; gate never opened, unspent)
+
+Stage 2h replaced Stage 2g's black-box weight search with gradient PPO to test
+whether Stage 2g was primarily an *optimizer* failure. The simulator, the ten-feature
+observation boundary, the continuous controls, the evaluator-only reward, and the
+pass-only interpretation were all kept unchanged. Two arms under a frozen budget:
+recurrent (`sb3_contrib.RecurrentPPO`, `MlpLstmPolicy`) vs. feed-forward
+(`stable_baselines3.PPO`, `MlpPolicy`).
+
+**Budget (preregistered, not altered after any run):** seeds (0,1,2), 1,000,000
+timesteps, 8 envs, `n_steps=256`, `batch_size=256`, `n_epochs=5`, `lr=3e-4`,
+`gamma=0.995`, `gae_lambda=0.95`, `ent_coef=0.01`, CPU. No hyperparameter sweep.
+Deps: torch 2.14.0 / gymnasium 1.3.0 / stable-baselines3 2.9.0 / sb3-contrib 2.9.0,
+run in `.venv-rl`. Fresh witnessed splits (exact-identity disjoint from the 13 prior
+splits and from each other): train seed 80 (450), readiness seed 81 (300), gate seed 82
+(300).
+
+**Result: both arms failed; the gate was never opened.** Model selection used only the
+spent 2f/2g gates — all six checkpoints scored 0/100 on both spent gates (all timeouts,
+zero collisions), so selection fell to the tie-break (lowest seed, so seed 0 for both
+arms). On the fresh readiness split both selected policies arrived 0/300 (overall 0.000,
+every layout 0.000, all 300 timeouts). Because the recurrent arm did not reach >=0.90
+overall / >=0.80 per layout, the one-shot gate split was **not** scored;
+`runs/stage2h/gate_results.json` does not exist and the gate remains unspent.
+
+**Diagnosis:** both families converged to a degenerate "freeze" local optimum — full
+braking, the car never leaves the start, every episode a timeout (never a collision,
+never an arrival), even on their own training scenarios. With `PHYSICS_DT=0.02s` the
+`+10` arrival is ~700 steps away and rare under exploration while the `-4` collision is
+immediate; standing still (bounded per-step `-0.001` loss) dominates. Env/reward/scoring
+were verified correct end-to-end: a scripted constant-forward action arrives through
+`StreetNavigationEnv` in 713 steps with total reward ~11.2 and the terminal `+10` bonus,
+so the 0.000 rates reflect the learned policies, not a broken harness.
+
+**Bounded interpretation:** PPO did not earn a gate attempt. The failure is bounded to
+policy family / optimization / exploration / generalization and does **not** implicate
+the ten-feature observation interface (provably sufficient for scripted and
+`WaypointController` control). Because the feed-forward arm also failed, **no** claim
+about recurrence necessity/sufficiency is made, and the "was 2g an optimizer failure?"
+question is left unanswered (a different optimizer, still failing). **No** dopamine/
+connectome step — that was gated on a Stage 2h pass, which did not occur. Full write-up:
+`runs/stage2h/README.md`; machine record: `runs/stage2h/results.json`. Trained model
+zips under `runs/stage2h/models/` are git-ignored (local only; sha256 in `results.json`).

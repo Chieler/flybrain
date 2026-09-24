@@ -1,0 +1,595 @@
+{
+  "dependencies": {
+    "torch": "2.14.0",
+    "gymnasium": "1.3.0",
+    "stable-baselines3": "2.9.0",
+    "sb3-contrib": "2.9.0"
+  },
+  "budget": {
+    "timesteps": 1000000,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "ppo_kwargs": {
+      "n_steps": 256,
+      "batch_size": 256,
+      "n_epochs": 5,
+      "learning_rate": 0.0003,
+      "gamma": 0.995,
+      "gae_lambda": 0.95,
+      "ent_coef": 0.01,
+      "verbose": 0,
+      "device": "cpu"
+    }
+  },
+  "split_sha256": {
+    "runs/stage2h/train_split.json": "33642819916199efc98cce6bb78a94b24765be3b1e31aae78fcd20e5615a461d",
+    "runs/stage2h/readiness_split.json": "329f16e7c8bc8a7cd3a9ef1586696f1b8c0518f2cf12b3fad076da4ecb1d3420",
+    "runs/stage2h/gate_split.json": "6a293ece0d3c96b1a6c2b8b089f0fd5715c7a1aab14482ca652b420dc1db01b2"
+  },
+  "arms": {
+    "recurrent": {
+      "runs": [
+        {
+          "seed": 0,
+          "model_path": "runs/stage2h/models/recurrent-seed0.zip",
+          "model_sha256": "62ef37d8b856f54ffbf8de803b291f393a24997abd6ca809f3dc2aa6ae0c9638",
+          "spent_gate_scores": [
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            },
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            }
+          ],
+          "selection_score": 0.0
+        },
+        {
+          "seed": 1,
+          "model_path": "runs/stage2h/models/recurrent-seed1.zip",
+          "model_sha256": "1a94913a3caba7ee478c7f82121a77af2f2ab9504661d190ab0d0f0729625db8",
+          "spent_gate_scores": [
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            },
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            }
+          ],
+          "selection_score": 0.0
+        },
+        {
+          "seed": 2,
+          "model_path": "runs/stage2h/models/recurrent-seed2.zip",
+          "model_sha256": "f59c71c1457facd9f030f58136f341320e1547bbd1bb6fd95cb7f957bd39090a",
+          "spent_gate_scores": [
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            },
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            }
+          ],
+          "selection_score": 0.0
+        }
+      ],
+      "selected": {
+        "seed": 0,
+        "model_path": "runs/stage2h/models/recurrent-seed0.zip",
+        "model_sha256": "62ef37d8b856f54ffbf8de803b291f393a24997abd6ca809f3dc2aa6ae0c9638",
+        "spent_gate_scores": [
+          {
+            "trials": 100,
+            "arrivals": 0,
+            "collisions": 0,
+            "timeouts": 100,
+            "overall_arrival_rate": 0.0,
+            "by_layout_arrival_rate": {
+              "cross": 0.0,
+              "regular": 0.0,
+              "asymmetric": 0.0
+            },
+            "by_layout": {
+              "cross": {
+                "trials": 12,
+                "arrivals": 0
+              },
+              "regular": {
+                "trials": 44,
+                "arrivals": 0
+              },
+              "asymmetric": {
+                "trials": 44,
+                "arrivals": 0
+              }
+            },
+            "passes_gate": false
+          },
+          {
+            "trials": 100,
+            "arrivals": 0,
+            "collisions": 0,
+            "timeouts": 100,
+            "overall_arrival_rate": 0.0,
+            "by_layout_arrival_rate": {
+              "cross": 0.0,
+              "regular": 0.0,
+              "asymmetric": 0.0
+            },
+            "by_layout": {
+              "cross": {
+                "trials": 12,
+                "arrivals": 0
+              },
+              "regular": {
+                "trials": 44,
+                "arrivals": 0
+              },
+              "asymmetric": {
+                "trials": 44,
+                "arrivals": 0
+              }
+            },
+            "passes_gate": false
+          }
+        ],
+        "selection_score": 0.0
+      }
+    },
+    "feedforward": {
+      "runs": [
+        {
+          "seed": 0,
+          "model_path": "runs/stage2h/models/feedforward-seed0.zip",
+          "model_sha256": "257e30e6545bd24b7b0d2cf8afb9f3eacbb02a9b7d201aff434eca60dd949b82",
+          "spent_gate_scores": [
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            },
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            }
+          ],
+          "selection_score": 0.0
+        },
+        {
+          "seed": 1,
+          "model_path": "runs/stage2h/models/feedforward-seed1.zip",
+          "model_sha256": "400c2c2412be03e3e2ff3c29a65a6c1b615197cd5c19bc1790864f3571917b35",
+          "spent_gate_scores": [
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            },
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            }
+          ],
+          "selection_score": 0.0
+        },
+        {
+          "seed": 2,
+          "model_path": "runs/stage2h/models/feedforward-seed2.zip",
+          "model_sha256": "c693552389ebe891b18a26775bb972ae4d7a47239b7b8dae43bf5f345dbcc43c",
+          "spent_gate_scores": [
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            },
+            {
+              "trials": 100,
+              "arrivals": 0,
+              "collisions": 0,
+              "timeouts": 100,
+              "overall_arrival_rate": 0.0,
+              "by_layout_arrival_rate": {
+                "cross": 0.0,
+                "regular": 0.0,
+                "asymmetric": 0.0
+              },
+              "by_layout": {
+                "cross": {
+                  "trials": 12,
+                  "arrivals": 0
+                },
+                "regular": {
+                  "trials": 44,
+                  "arrivals": 0
+                },
+                "asymmetric": {
+                  "trials": 44,
+                  "arrivals": 0
+                }
+              },
+              "passes_gate": false
+            }
+          ],
+          "selection_score": 0.0
+        }
+      ],
+      "selected": {
+        "seed": 0,
+        "model_path": "runs/stage2h/models/feedforward-seed0.zip",
+        "model_sha256": "257e30e6545bd24b7b0d2cf8afb9f3eacbb02a9b7d201aff434eca60dd949b82",
+        "spent_gate_scores": [
+          {
+            "trials": 100,
+            "arrivals": 0,
+            "collisions": 0,
+            "timeouts": 100,
+            "overall_arrival_rate": 0.0,
+            "by_layout_arrival_rate": {
+              "cross": 0.0,
+              "regular": 0.0,
+              "asymmetric": 0.0
+            },
+            "by_layout": {
+              "cross": {
+                "trials": 12,
+                "arrivals": 0
+              },
+              "regular": {
+                "trials": 44,
+                "arrivals": 0
+              },
+              "asymmetric": {
+                "trials": 44,
+                "arrivals": 0
+              }
+            },
+            "passes_gate": false
+          },
+          {
+            "trials": 100,
+            "arrivals": 0,
+            "collisions": 0,
+            "timeouts": 100,
+            "overall_arrival_rate": 0.0,
+            "by_layout_arrival_rate": {
+              "cross": 0.0,
+              "regular": 0.0,
+              "asymmetric": 0.0
+            },
+            "by_layout": {
+              "cross": {
+                "trials": 12,
+                "arrivals": 0
+              },
+              "regular": {
+                "trials": 44,
+                "arrivals": 0
+              },
+              "asymmetric": {
+                "trials": 44,
+                "arrivals": 0
+              }
+            },
+            "passes_gate": false
+          }
+        ],
+        "selection_score": 0.0
+      }
+    }
+  },
+  "readiness": {
+    "recurrent": {
+      "trials": 300,
+      "arrivals": 0,
+      "collisions": 0,
+      "timeouts": 300,
+      "overall_arrival_rate": 0.0,
+      "by_layout_arrival_rate": {
+        "cross": 0.0,
+        "regular": 0.0,
+        "asymmetric": 0.0
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 100,
+          "arrivals": 0
+        },
+        "regular": {
+          "trials": 100,
+          "arrivals": 0
+        },
+        "asymmetric": {
+          "trials": 100,
+          "arrivals": 0
+        }
+      },
+      "passes_gate": false
+    },
+    "feedforward": {
+      "trials": 300,
+      "arrivals": 0,
+      "collisions": 0,
+      "timeouts": 300,
+      "overall_arrival_rate": 0.0,
+      "by_layout_arrival_rate": {
+        "cross": 0.0,
+        "regular": 0.0,
+        "asymmetric": 0.0
+      },
+      "by_layout": {
+        "cross": {
+          "trials": 100,
+          "arrivals": 0
+        },
+        "regular": {
+          "trials": 100,
+          "arrivals": 0
+        },
+        "asymmetric": {
+          "trials": 100,
+          "arrivals": 0
+        }
+      },
+      "passes_gate": false
+    }
+  },
+  "gate_open": false
+}
