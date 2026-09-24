@@ -176,36 +176,65 @@ def _collision_t(a: StreetCarState, b: StreetCarState,
     return min(valid) if valid else None
 
 
-def run_street_episode(scenario: StreetScenario, layout: StreetLayout,
-                       controller: StreetController, dt: float = PHYSICS_DT,
-                       record: bool = False) -> StreetEpisodeResult:
-    state, elapsed, distance = scenario.start, 0.0, 0.0
-    trajectory = [(state.x, state.y, state.heading, state.speed)] if record else None
-    if _earliest_hit_t(state.x, state.y, state.x, state.y,
-                       scenario.target_x, scenario.target_y, scenario.target_radius) == 0.0:
-        return StreetEpisodeResult("arrival", 0.0, 0.0, trajectory)
-    cap = min(scenario.timeout, MAX_SIM_TIME)
-    while elapsed < cap:
-        step_dt = min(dt, cap - elapsed)
-        nxt = street_step(state, controller(observe_street(state, scenario, layout)), step_dt)
-        arrival_t = _earliest_hit_t(state.x, state.y, nxt.x, nxt.y,
-                                    scenario.target_x, scenario.target_y,
-                                    scenario.target_radius)
-        collision_t = _collision_t(state, nxt, layout)
+class StreetEpisode:
+    """One incrementally-stepped episode; the sole owner of street event physics."""
+
+    def __init__(self, scenario: StreetScenario, layout: StreetLayout,
+                 dt: float = PHYSICS_DT, record: bool = False):
+        self.scenario, self.layout, self.dt = scenario, layout, dt
+        self.state, self.elapsed, self.path_length = scenario.start, 0.0, 0.0
+        self.trajectory = ([(self.state.x, self.state.y,
+                            self.state.heading, self.state.speed)] if record else None)
+        self.cap = min(scenario.timeout, MAX_SIM_TIME)
+        self.result = None
+        if _earliest_hit_t(self.state.x, self.state.y, self.state.x, self.state.y,
+                           scenario.target_x, scenario.target_y,
+                           scenario.target_radius) == 0.0:
+            self.result = StreetEpisodeResult("arrival", 0.0, 0.0, self.trajectory)
+
+    def observe(self) -> StreetObservation:
+        return observe_street(self.state, self.scenario, self.layout)
+
+    def step(self, control: Control) -> StreetEpisodeResult | None:
+        if self.result is not None:
+            raise RuntimeError("street episode already finished")
+        step_dt = min(self.dt, self.cap - self.elapsed)
+        nxt = street_step(self.state, control, step_dt)
+        arrival_t = _earliest_hit_t(
+            self.state.x, self.state.y, nxt.x, nxt.y,
+            self.scenario.target_x, self.scenario.target_y,
+            self.scenario.target_radius)
+        collision_t = _collision_t(self.state, nxt, self.layout)
         event_t = arrival_t if arrival_t is not None and (
             collision_t is None or arrival_t <= collision_t) else collision_t
         if event_t is not None:
             outcome = "arrival" if event_t == arrival_t else "collision"
-            base = _lerp_state(state, nxt, event_t)
-            hit = StreetCarState(base.x, base.y, base.heading,
-                                 state.speed + (nxt.speed - state.speed) * event_t)
-            distance += math.hypot(hit.x - state.x, hit.y - state.y)
-            elapsed += step_dt * event_t
-            if trajectory is not None:
-                trajectory.append((hit.x, hit.y, hit.heading, hit.speed))
-            return StreetEpisodeResult(outcome, elapsed, distance, trajectory)
-        distance += math.hypot(nxt.x - state.x, nxt.y - state.y)
-        state, elapsed = nxt, elapsed + step_dt
-        if trajectory is not None:
-            trajectory.append((state.x, state.y, state.heading, state.speed))
-    return StreetEpisodeResult("timeout", elapsed, distance, trajectory)
+            base = _lerp_state(self.state, nxt, event_t)
+            hit = StreetCarState(
+                base.x, base.y, base.heading,
+                self.state.speed + (nxt.speed - self.state.speed) * event_t)
+            self.path_length += math.hypot(hit.x - self.state.x, hit.y - self.state.y)
+            self.elapsed += step_dt * event_t
+            self.state = hit
+            if self.trajectory is not None:
+                self.trajectory.append((hit.x, hit.y, hit.heading, hit.speed))
+            self.result = StreetEpisodeResult(
+                outcome, self.elapsed, self.path_length, self.trajectory)
+            return self.result
+        self.path_length += math.hypot(nxt.x - self.state.x, nxt.y - self.state.y)
+        self.state, self.elapsed = nxt, self.elapsed + step_dt
+        if self.trajectory is not None:
+            self.trajectory.append((nxt.x, nxt.y, nxt.heading, nxt.speed))
+        if self.elapsed >= self.cap:
+            self.result = StreetEpisodeResult(
+                "timeout", self.elapsed, self.path_length, self.trajectory)
+        return self.result
+
+
+def run_street_episode(scenario: StreetScenario, layout: StreetLayout,
+                       controller: StreetController, dt: float = PHYSICS_DT,
+                       record: bool = False) -> StreetEpisodeResult:
+    episode = StreetEpisode(scenario, layout, dt, record)
+    while episode.result is None:
+        episode.step(controller(episode.observe()))
+    return episode.result

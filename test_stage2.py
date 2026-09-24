@@ -2,6 +2,8 @@
 import math
 import unittest
 
+import pytest
+
 import street as st
 import brain as br
 import evaluate_stage2 as ev2
@@ -300,6 +302,31 @@ class TestStage2Viewer(unittest.TestCase):
         rect = viewer._rect_to_screen(st.Rect(-5.0, -4.0, 2.0, 3.0))
         self.assertGreater(rect.width, 0)
         self.assertGreater(rect.height, 0)
+
+
+def test_stateful_episode_preserves_straight_arrival_fingerprint():
+    layout = st.initial_layouts()["cross"]
+    scenario = st.StreetScenario(
+        "cross", st.StreetCarState(-21.0, 0.0, 0.0, 0.0), 21.0, 0.0)
+    episode = st.StreetEpisode(scenario, layout, record=True)
+    while episode.result is None:
+        episode.step(st.Control(0.0, 2.0))
+    result = episode.result
+    assert result.outcome == "arrival"
+    assert result.elapsed_time == pytest.approx(14.24)
+    assert result.path_length == pytest.approx(40.5)
+    assert result.trajectory[-1] == pytest.approx((19.5, 0.0, 0.0, 3.0))
+
+
+def test_wrapper_and_stateful_episode_match():
+    layout = st.initial_layouts()["cross"]
+    scenario = st.StreetScenario(
+        "cross", st.StreetCarState(-21.0, 0.0, 0.0, 0.0), 21.0, 0.0)
+    direct = st.run_street_episode(scenario, layout, lambda obs: st.Control(0.0, 2.0))
+    episode = st.StreetEpisode(scenario, layout)
+    while episode.result is None:
+        episode.step(st.Control(0.0, 2.0))
+    assert episode.result == direct
 
 
 if __name__ == "__main__":
