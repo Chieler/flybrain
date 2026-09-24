@@ -37,3 +37,48 @@ def test_reward_prefers_progress_and_arrival_and_penalizes_collision():
 def test_gym_checker_accepts_environment():
     from gymnasium.utils.env_checker import check_env
     check_env(stage2h.StreetNavigationEnv([one_straight_scenario()], seed=3))
+
+
+def test_heading_pool_has_32_unique_orientations_and_cardinals():
+    import math
+    import evaluate_stage2h as e2h
+    assert len(e2h.HEADINGS) == len(set(e2h.HEADINGS)) == 32
+    for heading in (0.0, math.pi / 2, math.pi, -math.pi / 2):
+        assert heading in e2h.HEADINGS
+
+
+def test_tiny_witnessed_splits_are_disjoint_and_solvable():
+    import evaluate_stage2h as e2h
+    from evaluate_stage2 import _scenario_key
+    from stage2b import WaypointController
+    from street import initial_layouts, run_street_episode
+    counts = {"cross": 1, "regular": 1, "asymmetric": 1}
+    first = e2h.build_split(980, counts, [])
+    second = e2h.build_split(981, counts, first)
+    assert {_scenario_key(s) for s in first}.isdisjoint(
+        {_scenario_key(s) for s in second})
+    layouts = initial_layouts()
+    for scenario in first + second:
+        controller = WaypointController(scenario, layouts[scenario.layout])
+        assert run_street_episode(
+            scenario, layouts[scenario.layout], controller).outcome == "arrival"
+
+
+def test_frozen_stage2h_splits_have_declared_sizes_and_no_overlap():
+    import evaluate_stage2h as e2h
+    from evaluate_stage2 import _scenario_key, load_scenarios
+    paths = ["runs/stage2h/train_split.json",
+             "runs/stage2h/readiness_split.json",
+             "runs/stage2h/gate_split.json"]
+    splits = [load_scenarios(path) for path in paths]
+    assert [len(split) for split in splits] == [450, 300, 300]
+    for split, count in zip(splits, (150, 100, 100)):
+        assert {name: sum(s.layout == name for s in split)
+                for name in ("cross", "regular", "asymmetric")} == {
+                    "cross": count, "regular": count, "asymmetric": count}
+    keys = [{_scenario_key(s) for s in split} for split in splits]
+    assert keys[0].isdisjoint(keys[1])
+    assert keys[0].isdisjoint(keys[2])
+    assert keys[1].isdisjoint(keys[2])
+    prior = {_scenario_key(s) for s in e2h._load(e2h.PRIOR_SPLITS)}
+    assert all(group.isdisjoint(prior) for group in keys)
