@@ -141,6 +141,19 @@ def load_scenarios(path: str) -> list[StreetScenario]:
     return [scenario_from_dict(data) for data in json.loads(Path(path).read_text())]
 
 
+def verify_or_save_scenarios(path: str, expected: list[StreetScenario]) -> list[StreetScenario]:
+    """Freeze once; an existing file must have the regenerated identities in order."""
+    target = Path(path)
+    if target.exists():
+        actual = load_scenarios(path)
+        if [_scenario_key(s) for s in actual] != [_scenario_key(s) for s in expected]:
+            raise SystemExit(f"{path} does not match regenerated identities")
+        return actual
+    target.parent.mkdir(parents=True, exist_ok=True)
+    save_scenarios(path, expected)
+    return expected
+
+
 @dataclass(frozen=True)
 class StreetSummary:
     trials: int

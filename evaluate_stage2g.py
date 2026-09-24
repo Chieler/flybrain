@@ -24,7 +24,8 @@ import time
 from pathlib import Path
 
 from street import initial_layouts
-from evaluate_stage2 import _scenario_key, load_scenarios, save_scenarios, sha256
+from evaluate_stage2 import (_scenario_key, load_scenarios, save_scenarios, sha256,
+                             verify_or_save_scenarios)
 from evaluate_stage2f import (
     EXCLUDE_PATHS as _PRIOR_EXCLUDE, _cardinal_strata, _load, generate_expanded_cross,
 )
@@ -112,9 +113,7 @@ def freeze_and_hash(train, dev, gate) -> dict:
              "runs/stage2g/dev_split.json": dev,
              "runs/stage2g/gate_split.json": gate}
     for path, split in paths.items():
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        if not Path(path).exists():
-            save_scenarios(path, split)
+        verify_or_save_scenarios(path, split)
     provenance = {p: sha256(p) for p in ALL_PRIOR_SPLITS}
     provenance.update({p: sha256(p) for p in paths})
     return provenance

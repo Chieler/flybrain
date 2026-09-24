@@ -1,8 +1,12 @@
+from pathlib import Path
+
 import numpy as np
+import pytest
 import stage2g
 import stage2d
 from stage2d import CEMConfig, cem_maximize
 from street import initial_layouts
+from evaluate_stage2 import save_scenarios, verify_or_save_scenarios
 from evaluate_stage2b import generate_stage2b_split
 
 
@@ -230,3 +234,26 @@ def test_interpret_recurrent_pass_ablation_fail_makes_no_memory_claim():
     assert "memory is not required within this policy family" not in text  # no overclaim
     assert "weak, mixed evidence" in text.lower()
     assert "attribution" in text.lower()
+
+
+def test_go_no_go_requires_one_candidate_to_meet_both_conditions(monkeypatch):
+    esn, theta0 = stage2g.warm_start_theta(True)
+    scales = np.zeros_like(theta0)
+    # warm start: arrival but below no-op; population: beats no-op but no arrival;
+    # final tuple is the no-op evaluation.
+    scores = iter([(1, -1.0), (0, 1.0), (0, 0.0)])
+    monkeypatch.setattr(stage2g, "policy_fitness_arrivals", lambda *a: next(scores))
+    cfg = CEMConfig(population=1, n_iter=1, seed=0)
+    out = stage2g.go_no_go(esn, theta0, scales, [], {}, cfg, True)
+    assert out["passed"] is False
+
+
+def test_verify_or_save_rejects_existing_identity_mismatch(tmp_path):
+    expected = generate_stage2b_split(
+        991, counts={"cross": 0, "regular": 1, "asymmetric": 0})
+    wrong = generate_stage2b_split(
+        992, counts={"cross": 0, "regular": 1, "asymmetric": 0})
+    path = tmp_path / "split.json"
+    save_scenarios(str(path), wrong)
+    with pytest.raises(SystemExit, match="does not match regenerated identities"):
+        verify_or_save_scenarios(str(path), expected)

@@ -738,3 +738,12 @@ connectome/dopamine learning on a failure.
   `scratchpad/` are intentionally untracked.
 
 Reproduce data with SETUP.md — nothing under `data/` is versioned.
+
+## 2026-09-23 Stage 2g correction (code/prose only; frozen results unchanged)
+
+Stage 2g code reproduction confirmed the saved policies and scores. Two future-run
+integrity defects were corrected without changing frozen results: go/no-go had
+combined arrival and fitness maxima from potentially different candidates, and
+existing split files were hashed without verifying regenerated identities. The
+as-run readiness rule (one extra dev arrival, 15→16/46) was too weak; this is a
+design defect and a reason Stage 2h uses a separate 0.90/0.80 readiness split.

@@ -141,22 +141,22 @@ def go_no_go(esn, theta0, scales, scenarios, layouts, cfg, recurrent) -> dict:
     sigma = np.full(dim, cfg.init_std)
     samples = rng.normal(np.zeros(dim), sigma, size=(cfg.population, dim))
 
-    best_arr, best_fit, pop_best_fit = 0, -np.inf, -np.inf
+    scores = []
     controller = RecurrentController(esn)
     for k, z in enumerate(np.vstack([np.zeros(dim), samples])):
         set_theta(esn, theta0 + scales * z, recurrent)
         arr, fit = policy_fitness_arrivals(controller, scenarios, layouts)
-        best_arr = max(best_arr, arr)
-        best_fit = max(best_fit, fit)
-        if k > 0:                                               # population only
-            pop_best_fit = max(pop_best_fit, fit)
+        scores.append((arr, fit, k))
     noop_arr, noop_fit = policy_fitness_arrivals(NoOpController(), scenarios, layouts)
+    probe_arr, probe_fit, _ = max(scores, key=lambda row: (row[0], row[1]))
+    population_best = max(fit for _, fit, k in scores if k > 0)
+    passed = any(arr >= 1 and fit > noop_fit for arr, fit, _ in scores)
     return {
-        "probe_best_arrivals": int(best_arr),
-        "population_best_fitness": float(pop_best_fit),
+        "probe_best_arrivals": int(probe_arr),
+        "population_best_fitness": float(population_best),
         "noop_fitness": float(noop_fit),
-        "beats_noop": bool(best_fit > noop_fit),
-        "passed": bool(best_arr >= 1 and best_fit > noop_fit),
+        "beats_noop": any(fit > noop_fit for _, fit, _ in scores),
+        "passed": bool(passed),
     }
 
 

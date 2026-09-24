@@ -28,3 +28,12 @@ claim is licensed since neither passed. Note the end-to-end 190-param black-box 
 search here (0.310) underperforms the readout-only Stage 2f recurrent gate (0.660):
 consistent with the higher-dimensional search being harder under the same budget, not
 evidence about the interface. Advancing requires the n=16 + CMA-ES spec amendment.
+
+## 2026-09-23 correction (code/prose only; frozen results unchanged)
+
+Stage 2g code reproduction confirmed the saved policies and scores. Two future-run
+integrity defects were corrected without changing frozen results: go/no-go had
+combined arrival and fitness maxima from potentially different candidates, and
+existing split files were hashed without verifying regenerated identities. The
+as-run readiness rule (one extra dev arrival, 15→16/46) was too weak; this is a
+design defect and a reason Stage 2h uses a separate 0.90/0.80 readiness split.
