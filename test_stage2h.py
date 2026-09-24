@@ -104,3 +104,31 @@ def test_gate_score_is_worst_normalized_threshold():
              "by_layout_arrival_rate": {
                  "cross": 0.40, "regular": 0.80, "asymmetric": 0.80}}
     assert stage2h.gate_score(score) == pytest.approx(0.5)
+
+
+def test_select_seed_maximizes_worst_spent_gate_then_lower_seed():
+    import evaluate_stage2h as e2h
+    rows = [
+        {"seed": 0, "selection_score": 0.7},
+        {"seed": 1, "selection_score": 0.8},
+        {"seed": 2, "selection_score": 0.8},
+    ]
+    assert e2h.select_seed(rows)["seed"] == 1
+
+
+def test_gate_requires_recurrent_readiness_pass(tmp_path):
+    import evaluate_stage2h as e2h
+    results = tmp_path / "results.json"
+    results.write_text('{"readiness":{"recurrent":{"passes_gate":false}}}')
+    with pytest.raises(SystemExit, match="readiness"):
+        e2h.require_gate_open(results, tmp_path / "gate_results.json")
+
+
+def test_gate_refuses_to_overwrite_spent_result(tmp_path):
+    import evaluate_stage2h as e2h
+    results = tmp_path / "results.json"
+    gate = tmp_path / "gate_results.json"
+    results.write_text('{"readiness":{"recurrent":{"passes_gate":true}}}')
+    gate.write_text('{}')
+    with pytest.raises(SystemExit, match="already exists"):
+        e2h.require_gate_open(results, gate)
