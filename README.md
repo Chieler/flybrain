@@ -10,11 +10,14 @@ and the [Stage 2 plan](docs/superpowers/plans/2026-09-12-stage-2-street-grid.md)
 ## Current status
 
 The connectome pipeline, arena, neural runtime, adapter calibration, controls
-harness, and pygame replay are implemented. The frozen 32-scenario calibration
-selected gain 32 and bias -0.05, with 7 arrivals; this is not evidence that the
-Stage 1 90/100 held-out target has been met. The 100-trial neural/control run is
-in progress. The separately labeled conventional baseline reaches 100/100 on
-the frozen held-out scenarios.
+harness, and pygame replay are implemented. On the frozen Stage 1 held-out set,
+the connectome controller arrived in 20/100 trials; the separately labeled
+conventional baseline arrived in 100/100. On the Stage 2 street-grid held-out
+set, the connectome controller arrived in 33/100 trials. Neither neural result
+meets its exit condition. Later Stage 2 experiments test navigation baselines
+and learned policies; the Stage 2h PPO policies failed their readiness split
+(0/300 arrivals), so their one-shot gate was not opened. See [HANDOFF.md](HANDOFF.md)
+for the results and limits.
 
 ## Run it
 
@@ -39,6 +42,18 @@ readings only — never a layout, building, target coordinate, or route. Only
 `avoidance_gain` and `brake_distance` are calibrated in Stage 2; Stage 1 neural
 dynamics and the PFL3 adapter `gain`/`bias` stay frozen.
 
+### Asymmetric layout arrival video
+
+[![A car following a recorded route through the asymmetric layout](docs/media/asymmetric_arrival.png)](docs/media/asymmetric_arrival.mp4)
+
+[Watch or download the 16-second MP4](docs/media/asymmetric_arrival.mp4). The car
+travels from the bottom of the layout to a goal near the opposite edge, making
+two turns. This is recorded Stage 2b scenario `stage2b-asymmetric-002` using the
+**waypoint baseline**, which has access to the layout and planned route. It is
+an evaluator-only solvability witness, not a connectome-controller result.
+Regenerate it with `scripts/render_asymmetric_arrival.py` using the system
+Python 3.9+ and `ffmpeg`.
+
 ```sh
 python -m unittest test_stage2 -q            # deterministic Stage 2 checks
 
@@ -62,11 +77,10 @@ python viewer.py --stage 2 --controller baseline \
   --scenarios runs/stage2/heldout.json --index 0
 ```
 
-**Held-out results: pending the real-graph run.** The 47 s/episode full-graph
-cost makes calibration (288 episodes) + controls (600 episodes) an ~11–12 h run;
-it is executed separately. Until `runs/stage2/checkpoint.json` and
-`runs/stage2/results.json` are committed, the Stage 2 exit condition is **NOT
-MET** and no arrival/collision numbers are claimed here.
+**Held-out results:** the real-graph run is complete. The neural controller
+arrived in 33/100 trials (65 collisions, 2 timeouts); the labeled direct-compass
+baseline arrived in 41/100. The Stage 2 exit condition was **not met**. Full
+control results and per-layout counts are in [runs/stage2/README.md](runs/stage2/README.md).
 
 ## Integrity boundary
 
