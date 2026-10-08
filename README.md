@@ -44,9 +44,9 @@ dynamics and the PFL3 adapter `gain`/`bias` stay frozen.
 
 ### Asymmetric layout arrival video
 
-[![A car following a recorded route through the asymmetric layout](docs/media/asymmetric_arrival.png)](docs/media/asymmetric_arrival.mp4)
+![A car following a recorded route through the asymmetric layout and arriving at a distant goal](docs/media/asymmetric_arrival.gif)
 
-[Watch or download the 16-second MP4](docs/media/asymmetric_arrival.mp4). The car
+[Download the 16-second MP4](https://raw.githubusercontent.com/Chieler/flybrain/master/docs/media/asymmetric_arrival.mp4). The car
 travels from the bottom of the layout to a goal near the opposite edge, making
 two turns. This is recorded Stage 2b scenario `stage2b-asymmetric-002` using the
 **waypoint baseline**, which has access to the layout and planned route. It is

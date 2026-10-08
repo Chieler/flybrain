@@ -19,6 +19,7 @@ import street
 
 OUT = ROOT / "docs" / "media" / "asymmetric_arrival.mp4"
 PREVIEW = OUT.with_suffix(".png")
+ANIMATED_PREVIEW = OUT.with_suffix(".gif")
 SCENARIO_LABEL = "stage2b-asymmetric-002"
 SIZE = 640
 FPS = 24
@@ -201,6 +202,14 @@ def main():
     subprocess.run([
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
         "-ss", "00:00:08", "-i", str(OUT), "-frames:v", "1", str(PREVIEW),
+    ], check=True)
+    subprocess.run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-i", str(OUT), "-filter_complex",
+        "[0:v]fps=12,scale=480:-1:flags=lanczos,split[v][p];"
+        "[p]palettegen=stats_mode=diff[pal];"
+        "[v][pal]paletteuse=dither=bayer:bayer_scale=5",
+        "-loop", "0", str(ANIMATED_PREVIEW),
     ], check=True)
     print(f"{OUT} — {result.outcome}, {result.elapsed_time:.2f} simulated seconds")
 
